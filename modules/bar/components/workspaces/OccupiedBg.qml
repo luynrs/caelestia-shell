@@ -48,8 +48,8 @@ Item {
         required property int index
         required property Workspace modelData
 
-        property real topRadius: ifAdjacent(0, -1, 0, width / 2)
-        property real bottomRadius: ifAdjacent(root.workspaces.length - 1, 1, 0, width / 2)
+        property real topRadius: ifAdjacent(0, -1, 0, height / 2)
+        property real bottomRadius: ifAdjacent(root.workspaces.length - 1, 1, 0, height / 2)
         property real topPadding: ifAdjacent(0, -1, root.wsSpacing, 0)
         property real bottomPadding: ifAdjacent(root.workspaces.length - 1, 1, root.wsSpacing, 0)
 
@@ -59,17 +59,17 @@ Item {
             return root.workspaces[index + adj]?.isOccupied ? yes : no;
         }
 
-        anchors.left: parent?.left
-        anchors.right: parent?.right
+        anchors.top: parent?.top
+        anchors.bottom: parent?.bottom
         anchors.margins: -1
 
-        y: modelData ? modelData.y + anchors.margins - topPadding : 0
-        implicitHeight: modelData ? modelData.LazyListView.visibleHeight - anchors.margins * 2 + topPadding + bottomPadding : 0
+        x: modelData ? modelData.x + anchors.margins - topPadding : 0
+        implicitWidth: modelData ? modelData.width - anchors.margins * 2 + topPadding + bottomPadding : 0
 
         color: Qt.alpha(root.colour, 1)
         topLeftRadius: topRadius
-        topRightRadius: topRadius
-        bottomLeftRadius: bottomRadius
+        topRightRadius: bottomRadius
+        bottomLeftRadius: topRadius
         bottomRightRadius: bottomRadius
 
         opacity: modelData?.isOccupied ? 1 : 0

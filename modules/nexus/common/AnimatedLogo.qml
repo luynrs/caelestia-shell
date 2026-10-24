@@ -232,8 +232,7 @@ Item {
                     from: 0.96
                     to: 1.0
                     duration: 250
-                    easing.type: Easing.OutBack
-                    easing.overshoot: 1.05
+                    easing.type: Easing.OutCubic
                 }
             }
 

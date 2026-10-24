@@ -4,7 +4,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Caelestia
-import Caelestia.Components
 import Caelestia.Config
 import qs.components
 import qs.components.effects
@@ -21,45 +20,45 @@ Item {
         return Hypr.workspaces.values.filter(w => w.name.startsWith("special:") && (allMonitors || w.monitor === root.monitor)).map(w => w.id);
     }
     readonly property int activeIdx: wsIds.indexOf(activeSpecialId)
-    readonly property real maxViewY: Math.max(0, view.contentHeight - height)
+    readonly property real maxViewX: Math.max(0, view.implicitWidth - width)
 
     readonly property Workspace activeWs: {
-        view.itemsDirty;
-        return view.itemAtIndex(activeIdx) as Workspace;
+        view.children;
+        return specialItems.itemAt(activeIdx) as Workspace;
     }
 
     function ensureVisible(animate = true): void {
         if (!activeWs)
             return;
 
-        const top = activeWs.LazyListView.layoutY;
-        const bottom = top + activeWs.LazyListView.preferredHeight;
+        const left = activeWs.x;
+        const right = left + activeWs.width;
 
-        let target = view.y;
-        if (top < -target)
-            target = -top;
-        else if (bottom > -target + height)
-            target = -(bottom - height);
+        let target = view.x;
+        if (left < -target)
+            target = -left;
+        else if (right > -target + width)
+            target = -(right - width);
 
-        target = CUtils.clamp(target, -maxViewY, 0);
-        if (target !== view.y) {
+        target = CUtils.clamp(target, -maxViewX, 0);
+        if (target !== view.x) {
             if (animate) {
-                const type = viewYAnim.type;
-                viewYAnim.type = Anim.DefaultSpatial;
-                view.y = target;
-                viewYAnim.type = type;
+                const type = viewXAnim.type;
+                viewXAnim.type = Anim.DefaultSpatial;
+                view.x = target;
+                viewXAnim.type = type;
             } else {
-                viewYBehavior.enabled = false;
-                view.y = target;
-                viewYBehavior.enabled = true;
+                viewXBehavior.enabled = false;
+                view.x = target;
+                viewXBehavior.enabled = true;
             }
         }
     }
 
     onActiveWsChanged: ensureVisible()
-    onHeightChanged: ensureVisible(false)
+    onWidthChanged: ensureVisible(false)
     Component.onCompleted: ensureVisible(false)
-    onMaxViewYChanged: ensureVisible()
+    onMaxViewXChanged: ensureVisible()
 
     layer.enabled: true
     layer.effect: Mask {
@@ -67,15 +66,15 @@ Item {
     }
 
     Connections {
-        function onLayoutYChanged(): void {
+        function onXChanged(): void {
             root.ensureVisible();
         }
 
-        function onPreferredHeightChanged(): void {
+        function onWidthChanged(): void {
             root.ensureVisible();
         }
 
-        target: root.activeWs?.LazyListView ?? null
+        target: root.activeWs
     }
 
     Item {
@@ -90,7 +89,7 @@ Item {
             radius: Tokens.rounding.full
 
             gradient: Gradient {
-                orientation: Gradient.Vertical
+                orientation: Gradient.Horizontal
 
                 GradientStop {
                     position: 0
@@ -112,13 +111,13 @@ Item {
         }
 
         Rectangle {
-            anchors.top: parent.top
             anchors.left: parent.left
-            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
 
             radius: Tokens.rounding.full
-            implicitHeight: parent.height / 2
-            opacity: view.y < -Tokens.padding.extraSmall ? 0 : 1
+            implicitWidth: parent.width / 2
+            opacity: view.x < -Tokens.padding.extraSmall ? 0 : 1
 
             Behavior on opacity {
                 Anim {
@@ -128,13 +127,13 @@ Item {
         }
 
         Rectangle {
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
             anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
 
             radius: Tokens.rounding.full
-            implicitHeight: parent.height / 2
-            opacity: view.y > -root.maxViewY + Tokens.padding.extraSmall ? 0 : 1
+            implicitWidth: parent.width / 2
+            opacity: view.x > -root.maxViewX + Tokens.padding.extraSmall ? 0 : 1
 
             Behavior on opacity {
                 Anim {
@@ -144,38 +143,37 @@ Item {
         }
     }
 
-    LazyListView {
+    Row {
         id: view
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        implicitHeight: contentHeight
-
-        cullDelegates: false
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         spacing: Tokens.spacing.small
-        removeDuration: Tokens.anim.durations.expressiveDefaultEffects
+        onImplicitWidthChanged: root.ensureVisible()
 
-        onContentHeightChanged: root.ensureVisible()
+        Repeater {
+            id: specialItems
 
-        model: ScriptModel {
-            values: root.wsIds
+            model: ScriptModel {
+                values: root.wsIds
+            }
+
+            delegate: Workspace {
+                activeWsId: root.activeSpecialId
+                ws: modelData
+                monitor: root.monitor
+                offMonitorColour: Colours.palette.m3outline
+                displayType: Config.bar.workspaces.specialDisplayType
+                showWindows: Config.bar.workspaces.showWindowsOnSpecialWorkspaces
+                iconRules: GlobalConfig.bar.workspaces.specialWorkspaceIcons
+            }
         }
 
-        delegate: Workspace {
-            activeWsId: root.activeSpecialId
-            ws: modelData
-            monitor: root.monitor
-            offMonitorColour: Colours.palette.m3outline
-            displayType: Config.bar.workspaces.specialDisplayType
-            showWindows: Config.bar.workspaces.showWindowsOnSpecialWorkspaces
-            iconRules: GlobalConfig.bar.workspaces.specialWorkspaceIcons
-        }
-
-        Behavior on y {
-            id: viewYBehavior
+        Behavior on x {
+            id: viewXBehavior
 
             Anim {
-                id: viewYAnim
+                id: viewXAnim
 
                 type: Anim.FastEffects
             }
@@ -184,8 +182,8 @@ Item {
 
     Loader {
         asynchronous: true
-        anchors.left: view.left
-        anchors.right: view.right
+        anchors.top: view.top
+        anchors.bottom: view.bottom
         active: Config.bar.workspaces.activeIndicator
 
         sourceComponent: ActiveIndicator {
@@ -197,31 +195,31 @@ Item {
     }
 
     MouseArea {
-        property real startY
-        property real startViewY
+        property real startX
+        property real startViewX
         property bool dragging
 
         anchors.fill: parent
 
         onPressed: event => {
-            startY = event.y;
-            startViewY = view.y;
+            startX = event.x;
+            startViewX = view.x;
             dragging = false;
         }
 
         onPositionChanged: event => {
-            if (!dragging && Math.abs(event.y - startY) > drag.threshold)
+            if (!dragging && Math.abs(event.x - startX) > drag.threshold)
                 dragging = true;
 
             if (dragging)
-                view.y = CUtils.clamp(startViewY + (event.y - startY), -root.maxViewY, 0);
+                view.x = CUtils.clamp(startViewX + (event.x - startX), -root.maxViewX, 0);
         }
 
         onClicked: event => {
             if (dragging)
                 return;
 
-            const ws = view.itemAt(event.x, event.y - view.y) as Workspace;
+            const ws = view.childAt(event.x - view.x, event.y) as Workspace;
             if (ws) {
                 const match = Hypr.workspaces.values.find(w => w.id === ws.ws);
                 if (match)

@@ -80,7 +80,6 @@ private:
     void scheduleLoad();
     void doLoad();
     void cancelInFlight();
-    int newRequestId();
 
     void tryLocal(int reqId);
     void tryLrclib(int reqId);

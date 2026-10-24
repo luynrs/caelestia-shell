@@ -5,6 +5,8 @@
 #include <pipewire/pipewire.h>
 
 #include <algorithm>
+#include <cstring>
+#include <mutex>
 #include <stop_token>
 #include <utility>
 #include <vector>
@@ -157,6 +159,7 @@ void PipeWireWorker::processStream() {
     const spa_buffer* buf = buffer->buffer;
     const auto* samples = reinterpret_cast<const qint16*>(buf->datas[0].data);
     if (samples == nullptr) {
+        pw_stream_queue_buffer(m_stream, buffer);
         return;
     }
 
@@ -188,23 +191,22 @@ AudioCollector& AudioCollector::instance() {
 }
 
 void AudioCollector::clearBuffer() {
-    auto* writeBuffer = m_writeBuffer.load(std::memory_order_relaxed);
-    std::ranges::fill(*writeBuffer, 0.0f);
-
-    auto* oldRead = m_readBuffer.exchange(writeBuffer, std::memory_order_acq_rel);
-    m_writeBuffer.store(oldRead, std::memory_order_release);
+    const QMutexLocker locker(&m_mutex);
+    m_buffer.fill(0.0f);
 }
 
 void AudioCollector::loadChunk(const qint16* samples, quint32 count) {
+    std::unique_lock lock(m_mutex, std::try_to_lock);
+    if (!lock.owns_lock()) {
+        return;
+    }
+
     count = std::min(count, ac::k_chunkSize);
 
-    auto* writeBuffer = m_writeBuffer.load(std::memory_order_relaxed);
-    std::transform(samples, samples + count, writeBuffer->begin(), [](qint16 sample) {
+    std::transform(samples, samples + count, m_buffer.begin(), [](qint16 sample) {
         return static_cast<float>(sample) / 32768.0f;
     });
-
-    auto* oldRead = m_readBuffer.exchange(writeBuffer, std::memory_order_acq_rel);
-    m_writeBuffer.store(oldRead, std::memory_order_release);
+    std::fill(m_buffer.begin() + count, m_buffer.end(), 0.0f);
 }
 
 quint32 AudioCollector::readChunk(float* out, quint32 count) {
@@ -212,8 +214,8 @@ quint32 AudioCollector::readChunk(float* out, quint32 count) {
         count = ac::k_chunkSize;
     }
 
-    auto* readBuffer = m_readBuffer.load(std::memory_order_acquire);
-    std::memcpy(out, readBuffer->data(), count * sizeof(float));
+    const QMutexLocker locker(&m_mutex);
+    memcpy(out, m_buffer.data(), count * sizeof(float));
 
     return count;
 }
@@ -223,8 +225,8 @@ quint32 AudioCollector::readChunk(double* out, quint32 count) {
         count = ac::k_chunkSize;
     }
 
-    auto* readBuffer = m_readBuffer.load(std::memory_order_acquire);
-    std::transform(readBuffer->begin(), readBuffer->begin() + count, out, [](float sample) {
+    const QMutexLocker locker(&m_mutex);
+    std::transform(m_buffer.begin(), m_buffer.begin() + count, out, [](float sample) {
         return static_cast<double>(sample);
     });
 
@@ -232,11 +234,7 @@ quint32 AudioCollector::readChunk(double* out, quint32 count) {
 }
 
 AudioCollector::AudioCollector(QObject* parent)
-    : Service(parent)
-    , m_buffer1(ac::k_chunkSize)
-    , m_buffer2(ac::k_chunkSize)
-    , m_readBuffer(&m_buffer1)
-    , m_writeBuffer(&m_buffer2) {}
+    : Service(parent) {}
 
 AudioCollector::~AudioCollector() {
     AudioCollector::stop();

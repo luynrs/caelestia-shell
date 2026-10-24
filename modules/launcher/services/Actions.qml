@@ -16,8 +16,18 @@ Searcher {
         return search.slice(GlobalConfig.launcher.actionPrefix.length);
     }
 
-    list: variants.instances
+    list: [...variants.instances, clipboardAction]
     useFuzzy: GlobalConfig.launcher.useFuzzy.actions
+
+    Action {
+        id: clipboardAction
+        modelData: ({
+            name: Tr.tr("Clipboard history"),
+            description: Tr.tr("Search copied text and images"),
+            icon: "content_paste",
+            command: ["autocomplete", "clipboard"]
+        })
+    }
 
     Variants {
         id: variants

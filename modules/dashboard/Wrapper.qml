@@ -27,25 +27,41 @@ Item {
         }
     }
 
-    readonly property real nonAnimHeight: (content.item as Content)?.nonAnimHeight ?? 0
     readonly property bool shouldBeActive: screenState.dashboard && Config.dashboard.enabled
-    property real offsetScale: shouldBeActive ? 0 : 1
+    property real offsetScale: 1
 
     visible: offsetScale < 1
-    anchors.topMargin: (-implicitHeight - 5) * offsetScale
+    anchors.bottomMargin: (-implicitHeight - 5) * offsetScale
     implicitHeight: content.implicitHeight
     implicitWidth: content.implicitWidth || 854 // Hard coded fallback for first open
     opacity: 1 - offsetScale
 
-    Behavior on offsetScale {
-        Anim {}
+    states: [
+        State {
+            name: "open"
+            when: root.shouldBeActive && !root.screenState.launcher
+            PropertyChanges {
+                root.offsetScale: 0
+            }
+        },
+        State {
+            name: "closed"
+            when: !root.shouldBeActive && !root.screenState.launcher
+        }
+    ]
+
+    transitions: Transition {
+        to: "open,closed"
+        Anim {
+            property: "offsetScale"
+        }
     }
 
     Loader {
         id: content
 
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottom: parent.bottom
+        anchors.top: parent.top
 
         active: root.shouldBeActive || root.visible
 

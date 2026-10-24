@@ -1,0 +1,14 @@
+diff --git a/src/services/status_notifier/item.cpp b/src/services/status_notifier/item.cpp
+--- a/src/services/status_notifier/item.cpp
++++ b/src/services/status_notifier/item.cpp
+@@ -63,9 +63,7 @@ StatusNotifierItem::StatusNotifierItem(const QString& address, QObject* parent)
+ 	});
+ 
+ 	QObject::connect(this->item, &DBusStatusNotifierItem::NewIcon, this, [this]() {
+-		this->pIconName.requestUpdate();
+-		this->pIconPixmaps.requestUpdate();
+-		if (this->pIconThemePath.exists()) this->pIconThemePath.requestUpdate();
++		this->properties.updateAllViaGetAll();
+ 	});
+ 
+ 	QObject::connect(this->item, &DBusStatusNotifierItem::NewOverlayIcon, this, [this]() {

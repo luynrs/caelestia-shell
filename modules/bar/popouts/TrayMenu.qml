@@ -14,9 +14,18 @@ StackView {
 
     required property PopoutState popouts
     required property QsMenuHandle trayItem
+    readonly property SubMenu sizingMenu: {
+        for (let index = depth - 1; index >= 0; index--) {
+            const menu = get(index) as SubMenu;
+            if (menu.hasChildren && menu.implicitHeight > menu.padding * 2)
+                return menu;
+        }
+        return null;
+    }
+    readonly property bool ready: sizingMenu !== null
 
-    implicitWidth: (currentItem as SubMenu)?.hasChildren ? currentItem.implicitWidth : -Tokens.padding.large * 2
-    implicitHeight: (currentItem as SubMenu)?.hasChildren ? currentItem.implicitHeight : -Tokens.padding.large * 2
+    implicitWidth: ready ? sizingMenu.implicitWidth : -Tokens.padding.large * 2
+    implicitHeight: ready ? sizingMenu.implicitHeight : -Tokens.padding.large * 2
 
     initialItem: SubMenu {
         handle: root.trayItem
@@ -51,7 +60,6 @@ StackView {
         spacing: Tokens.spacing.small
 
         opacity: shown ? 1 : 0
-        scale: shown ? 1 : 0.8
 
         Component.onCompleted: shown = true
         StackView.onActivating: shown = true
@@ -62,10 +70,6 @@ StackView {
             Anim {
                 type: Anim.DefaultEffects
             }
-        }
-
-        Behavior on scale {
-            Anim {}
         }
 
         QsMenuOpener {
@@ -91,7 +95,6 @@ StackView {
                 Loader {
                     id: children
 
-                    asynchronous: true
                     anchors.left: parent.left
                     anchors.right: parent.right
 
@@ -125,7 +128,6 @@ StackView {
                         Loader {
                             id: icon
 
-                            asynchronous: true
                             anchors.left: parent.left
 
                             active: item.modelData.icon !== ""
@@ -161,7 +163,6 @@ StackView {
                         Loader {
                             id: expand
 
-                            asynchronous: true
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
 
@@ -178,7 +179,6 @@ StackView {
         }
 
         Loader {
-            asynchronous: true
             active: menu.isSubMenu
 
             sourceComponent: Item {

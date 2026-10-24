@@ -5,7 +5,6 @@ import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
 import Caelestia
-import Caelestia.Components
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -42,8 +41,8 @@ StyledClippingRect {
     }
 
     readonly property var workspaces: {
-        workspaces.itemsDirty;
-        return wsIds.map(id => workspaces.itemAtIndex(workspaceIndex(id)));
+        workspaces.children;
+        return wsIds.map(id => workspaceItems.itemAt(workspaceIndex(id)));
     }
 
     // Only relevant for when showUnoccupied is true
@@ -65,8 +64,8 @@ StyledClippingRect {
         return index % shown;
     }
 
-    implicitWidth: Tokens.sizes.bar.innerWidth
-    implicitHeight: workspaces.layoutHeight + workspaces.anchors.margins * 2
+    implicitWidth: workspaces.implicitWidth + workspaces.anchors.margins * 2
+    implicitHeight: Tokens.sizes.bar.innerWidth
 
     color: Colours.tPalette.m3surfaceContainer
     radius: Tokens.rounding.full
@@ -104,33 +103,35 @@ StyledClippingRect {
             }
         }
 
-        LazyListView {
+        Row {
             id: workspaces
 
             anchors.left: parent.left
-            anchors.right: parent.right
             anchors.top: parent.top
+            anchors.bottom: parent.bottom
             anchors.margins: Tokens.padding.extraSmall
-            implicitHeight: contentHeight
 
             spacing: Tokens.spacing.extraSmall
-            removeDuration: Tokens.anim.durations.expressiveDefaultEffects
 
-            model: ScriptModel {
-                values: root.wsIds
-            }
+            Repeater {
+                id: workspaceItems
 
-            delegate: Workspace {
-                activeWsId: root.activeWsId
-                ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
-                monitor: root.monitor
+                model: ScriptModel {
+                    values: root.wsIds
+                }
 
-                displayType: Config.bar.workspaces.displayType
-                showWindows: Config.bar.workspaces.showWindows
-                iconRules: GlobalConfig.bar.workspaces.workspaceIcons
-                activeLabel: Config.bar.workspaces.activeLabel
-                occupiedLabel: Config.bar.workspaces.occupiedLabel
-                label: Config.bar.workspaces.label
+                delegate: Workspace {
+                    activeWsId: root.activeWsId
+                    ws: Config.bar.workspaces.showUnoccupied ? root.groupOffset + index + 1 : modelData
+                    monitor: root.monitor
+
+                    displayType: Config.bar.workspaces.displayType
+                    showWindows: Config.bar.workspaces.showWindows
+                    iconRules: GlobalConfig.bar.workspaces.workspaceIcons
+                    activeLabel: Config.bar.workspaces.activeLabel
+                    occupiedLabel: Config.bar.workspaces.occupiedLabel
+                    label: Config.bar.workspaces.label
+                }
             }
         }
 
@@ -156,14 +157,14 @@ StyledClippingRect {
 
         Loader {
             asynchronous: true
-            anchors.left: workspaces.left
-            anchors.right: workspaces.right
+            anchors.top: workspaces.top
+            anchors.bottom: workspaces.bottom
             active: Config.bar.workspaces.activeIndicator
 
             sourceComponent: ActiveIndicator {
                 activeWs: {
-                    workspaces.itemsDirty;
-                    return workspaces.itemAtIndex(root.activeWsIdx) as Workspace;
+                    workspaces.children;
+                    return workspaceItems.itemAt(root.activeWsIdx) as Workspace;
                 }
                 mask: workspaces
             }
@@ -172,7 +173,7 @@ StyledClippingRect {
         MouseArea {
             anchors.fill: workspaces
             onClicked: event => {
-                const ws = (workspaces.itemAt(event.x, event.y) as Workspace)?.ws;
+                const ws = (workspaces.childAt(event.x, event.y) as Workspace)?.ws;
                 if (!ws)
                     return;
                 if (Hypr.activeWsId !== ws)
@@ -236,7 +237,7 @@ StyledClippingRect {
         }
     }
 
-    Behavior on implicitHeight {
+    Behavior on implicitWidth {
         Anim {}
     }
 }

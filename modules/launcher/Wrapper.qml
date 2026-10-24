@@ -15,14 +15,9 @@ Item {
 
     readonly property bool shouldBeActive: screenState.launcher && Config.launcher.enabled
 
-    readonly property real maxHeight: {
-        let max = screen.height - Config.border.thickness * 2 + Tokens.padding.extraLarge;
-        if (screenState.dashboard)
-            max -= panels.dashboard.nonAnimHeight;
-        return max;
-    }
+    readonly property real maxHeight: panels.height
 
-    property real offsetScale: shouldBeActive ? 0 : 1
+    property real offsetScale: 1
 
     onShouldBeActiveChanged: {
         if (shouldBeActive)
@@ -39,8 +34,25 @@ Item {
 
     Component.onCompleted: Qt.callLater(() => Apps) // Load apps on init
 
-    Behavior on offsetScale {
-        Anim {}
+    states: [
+        State {
+            name: "open"
+            when: root.shouldBeActive && !root.screenState.dashboard
+            PropertyChanges {
+                root.offsetScale: 0
+            }
+        },
+        State {
+            name: "closed"
+            when: !root.shouldBeActive && !root.screenState.dashboard
+        }
+    ]
+
+    transitions: Transition {
+        to: "open,closed"
+        Anim {
+            property: "offsetScale"
+        }
     }
 
     Loader {

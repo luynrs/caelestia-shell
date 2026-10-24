@@ -1,6 +1,8 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQml.XmlListModel
+import Quickshell
 import Quickshell.Io
 import Caelestia
 import Caelestia.Config
@@ -18,7 +20,7 @@ Item {
     property bool _notifiedLimit: false
 
     function start() {
-        xkbXmlBase.running = true;
+        xkbXml.source = "file://" + (Quickshell.env("CAELESTIA_XKB_RULES_PATH") || "/usr/share/X11/xkb/rules/base.lst").replace(/\.lst$/, ".xml");
         getKbLayoutOpt.running = true;
     }
 
@@ -32,15 +34,12 @@ Item {
         switchProc.running = true;
     }
 
-    function _buildXmlMap(xml) {
+    function _buildXmlMap() {
         const map = {};
 
-        const re = /<name>\s*([^<]+?)\s*<\/name>[\s\S]*?<description>\s*([^<]+?)\s*<\/description>/g;
-
-        let m;
-        while ((m = re.exec(xml)) !== null) {
-            const code = (m[1] || "").trim();
-            const desc = (m[2] || "").trim();
+        for (let i = 0; i < xkbXml.count; i++) {
+            const code = xkbXml.data(xkbXml.index(i, 0), Qt.UserRole);
+            const desc = xkbXml.data(xkbXml.index(i, 0), Qt.UserRole + 1);
             if (!code || !desc)
                 continue;
             map[code] = _short(desc);
@@ -82,13 +81,9 @@ Item {
         const parts = raw.split(",").map(s => s.trim()).filter(Boolean);
         layoutsModel.clear();
 
-        const seen = new Set();
         let idx = 0;
 
         for (const p of parts) {
-            if (seen.has(p))
-                continue;
-            seen.add(p);
             layoutsModel.append({
                 layoutIndex: idx,
                 token: p,
@@ -135,23 +130,22 @@ Item {
         id: layoutsModel
     }
 
-    Process {
-        id: xkbXmlBase
+    XmlListModel {
+        id: xkbXml
 
-        command: ["xmllint", "--xpath", "//layout/configItem[name and description]", "/usr/share/X11/xkb/rules/base.xml"]
-        stdout: StdioCollector {
-            onStreamFinished: model._buildXmlMap(text)
-        }
-        onRunningChanged: if (!running && (typeof xkbXmlBase.exitCode !== "undefined") && xkbXmlBase.exitCode !== 0) // qmllint disable missing-property
-            xkbXmlEvdev.running = true
-    }
+        query: "/xkbConfigRegistry/layoutList/layout"
+        XmlListModelRole { name: "code"; elementName: "configItem/name" }
+        XmlListModelRole { name: "description"; elementName: "configItem/description" }
 
-    Process {
-        id: xkbXmlEvdev
-
-        command: ["xmllint", "--xpath", "//layout/configItem[name and description]", "/usr/share/X11/xkb/rules/evdev.xml"]
-        stdout: StdioCollector {
-            onStreamFinished: model._buildXmlMap(text)
+        onStatusChanged: {
+            if (status === XmlListModel.Ready && count > 0) {
+                model._buildXmlMap();
+            } else if (status === XmlListModel.Error || status === XmlListModel.Ready) {
+                if (source.toString().endsWith("/evdev.xml"))
+                    console.warn("Failed to load XKB layout descriptions:", source, errorString());
+                else
+                    source = source.toString().replace(/[^/]+$/, "evdev.xml");
+            }
         }
     }
 

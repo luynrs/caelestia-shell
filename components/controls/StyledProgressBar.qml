@@ -71,6 +71,7 @@ ProgressBar {
 
         Anim on progress {
             running: root.indeterminateAnimState !== StyledProgressBar.Stopped
+            paused: running && (!root.visible || root.width <= 0 || root.height <= 0)
             from: 0
             to: 1
             duration: manager.duration
@@ -225,7 +226,7 @@ ProgressBar {
 
         Anim on waveProgress {
             running: true
-            paused: wave.amplitudeMultiplier === 0 || root.wavePaused
+            paused: running && (wave.amplitudeMultiplier === 0 || root.wavePaused || !root.visible || root.width <= 0 || root.height <= 0)
             from: 0
             to: 1
             duration: root.waveDuration

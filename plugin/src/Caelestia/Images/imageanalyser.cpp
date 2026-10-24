@@ -103,6 +103,8 @@ qreal ImageAnalyser::luminance() const {
 }
 
 void ImageAnalyser::requestUpdate() {
+    m_update_serial++;
+
     if (m_source.isEmpty() && !m_sourceItem) {
         return;
     }
@@ -145,13 +147,16 @@ void ImageAnalyser::update() {
                 Qt::SingleShotConnection);
             return;
         }
-        QObject::connect(grabResult.data(), &QQuickItemGrabResult::ready, this, [grabResult, this]() {
-            m_futureWatcher->setFuture(QtConcurrent::run(&ImageAnalyser::analyse, grabResult->image(), m_rescaleSize));
-        });
+        QObject::connect(grabResult.data(), &QQuickItemGrabResult::ready, this, [grabResult, update_serial = m_update_serial, rescale_size = m_rescaleSize, this]() {
+            if (update_serial != m_update_serial) {
+                return;
+            }
+            m_futureWatcher->setFuture(QtConcurrent::run(&ImageAnalyser::analyse, grabResult->image(), rescale_size));
+        }, Qt::SingleShotConnection);
     } else {
-        m_futureWatcher->setFuture(QtConcurrent::run([=, this](QPromise<AnalyseResult>& promise) {
-            const QImage image(m_source);
-            analyse(promise, image, m_rescaleSize);
+        m_futureWatcher->setFuture(QtConcurrent::run([source = m_source, rescale_size = m_rescaleSize](QPromise<AnalyseResult>& promise) {
+            const QImage image(source);
+            analyse(promise, image, rescale_size);
         }));
     }
 }

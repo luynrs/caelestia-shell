@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import M3Shapes
 import Caelestia.Config
 import qs.components
@@ -15,17 +14,8 @@ Item {
 
     readonly property alias shape: shape
 
-    property bool hadPrevious
     property color fallbackColour: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
 
-    // Slight glow to separate from bg
-    layer.enabled: true
-    layer.effect: MultiEffect {
-        shadowEnabled: true
-        blurMax: 1
-        shadowColor: Colours.palette.m3outline
-        shadowOpacity: 0.3
-    }
 
     Behavior on fallbackColour {
         CAnim {}

@@ -198,14 +198,14 @@ Singleton {
 
         function setBrightness(value: real): void {
             value = Math.max(0, Math.min(1, value));
-            const rounded = Math.round(value * 100);
-            if (Math.round(brightness * 100) === rounded)
-                return;
-
             if (isDdc && timer.running) {
                 queuedBrightness = value;
                 return;
             }
+
+            const rounded = Math.round(value * 100);
+            if (Math.round(brightness * 100) === rounded)
+                return;
 
             brightness = value;
 

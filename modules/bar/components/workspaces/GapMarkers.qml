@@ -28,16 +28,16 @@ Item {
                 if (!modelData || index === 0)
                     return 0;
                 if (modelData.focused)
-                    return -root.wsSpacing / 2 - implicitHeight;
+                    return -root.wsSpacing / 2 - implicitWidth;
                 return (root.workspaces[index - 1]?.focused ?? false) ? root.wsSpacing / 2 : 0;
             }
 
-            anchors.left: parent?.left
-            anchors.right: parent?.right
+            anchors.top: parent?.top
+            anchors.bottom: parent?.bottom
             anchors.margins: Tokens.padding.extraSmall
 
-            y: modelData ? modelData.y - root.wsSpacing / 2 + shift : 0
-            implicitHeight: 1
+            x: modelData ? modelData.x - root.wsSpacing / 2 + shift : 0
+            implicitWidth: 1
             color: Colours.palette.m3outline
 
             opacity: AnimatedRepeater.adding || AnimatedRepeater.removing || !modelData || index === 0 || root.workspaces[index - 1]?.ws === modelData?.ws - 1 ? 0 : 1

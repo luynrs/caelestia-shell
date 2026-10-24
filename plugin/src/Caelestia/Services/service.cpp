@@ -10,7 +10,7 @@ void Service::ref(QObject* sender) {
         start();
     }
 
-    QObject::connect(sender, &QObject::destroyed, this, &Service::unref);
+    QObject::connect(sender, &QObject::destroyed, this, &Service::unref, Qt::UniqueConnection);
     m_refs << sender;
 }
 

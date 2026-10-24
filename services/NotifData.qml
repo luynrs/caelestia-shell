@@ -214,7 +214,7 @@ QtObject {
     function unlock(item: Item): void {
         locks.delete(item);
         if (closed)
-            close();
+            Qt.callLater(() => notif.close());
     }
 
     function close(): void {

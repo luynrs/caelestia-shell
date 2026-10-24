@@ -44,16 +44,15 @@ StyledRect {
     radius: Tokens.rounding.full
 
     clip: true
-    implicitWidth: Tokens.sizes.bar.innerWidth
-    implicitHeight: iconColumn.implicitHeight + Tokens.padding.medium * 2
+    implicitWidth: iconColumn.implicitWidth + Tokens.padding.medium * 2
+    implicitHeight: Tokens.sizes.bar.innerWidth
 
-    ColumnLayout {
+    RowLayout {
         id: iconColumn
 
-        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: Tokens.padding.medium
+        anchors.rightMargin: Tokens.padding.medium
 
         spacing: 0
 
@@ -156,9 +155,9 @@ StyledRect {
         default property Item item
         property string name: modelData.id.toLowerCase()
 
-        Layout.topMargin: Math.round(topGap)
-        Layout.bottomMargin: Math.round(bottomGap)
-        Layout.alignment: Qt.AlignHCenter
+        Layout.leftMargin: Math.round(topGap)
+        Layout.rightMargin: Math.round(bottomGap)
+        Layout.alignment: Qt.AlignVCenter
 
         implicitWidth: item?.implicitWidth ?? 0
         implicitHeight: item?.implicitHeight ?? 0

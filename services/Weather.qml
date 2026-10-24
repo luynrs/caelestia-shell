@@ -222,7 +222,6 @@ Singleton {
                 city = fixCityName(result.name);
             } else {
                 loc = "";
-                reload();
             }
         });
     }

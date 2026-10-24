@@ -1,6 +1,7 @@
 #include "audioprovider.hpp"
 
 #include <qloggingcategory.h>
+#include <qpointer.h>
 #include <qthread.h>
 
 #include "audiocollector.hpp"
@@ -28,7 +29,11 @@ void AudioProcessor::init() {
 }
 
 void AudioProcessor::start() {
-    QMetaObject::invokeMethod(&AudioCollector::instance(), &AudioCollector::ref, Qt::QueuedConnection, this);
+    QMetaObject::invokeMethod(&AudioCollector::instance(), [processor = QPointer(this)] {
+        if (processor) {
+            AudioCollector::instance().ref(processor);
+        }
+    }, Qt::QueuedConnection);
     if (m_timer) {
         m_timer->start();
     }

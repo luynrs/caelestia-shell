@@ -203,7 +203,7 @@ ColumnLayout {
                     property: "scale"
                     to: 1.0
                     duration: 220
-                    easing.type: Easing.OutBack
+                    easing.type: Easing.OutCubic
                 }
             }
         }

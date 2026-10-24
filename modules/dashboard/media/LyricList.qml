@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Effects
 import QtQuick.Layouts
 import Caelestia.Config
 import Caelestia.I18n
@@ -253,7 +252,6 @@ Item {
 
             required property string modelData
             required property int index
-            property real effectScale: ListView.isCurrentItem ? 1 : 0
 
             anchors.left: lyrics.contentItem.left
             anchors.right: lyrics.contentItem.right
@@ -263,20 +261,6 @@ Item {
             font: Tokens.font.body.medium
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-            layer.enabled: effectScale > 0
-            layer.effect: MultiEffect {
-                shadowEnabled: true
-                shadowColor: Colours.palette.m3primary
-                shadowOpacity: 0.5 * lyric.effectScale
-                shadowBlur: 0.6 * lyric.effectScale
-                blur: 0.4 * lyric.effectScale
-            }
-
-            Behavior on effectScale {
-                Anim {
-                    type: Anim.SlowEffects
-                }
-            }
 
             MouseArea {
                 id: mouse

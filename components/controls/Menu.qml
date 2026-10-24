@@ -46,7 +46,6 @@ MouseArea {
     onClicked: expanded = false
 
     opacity: expanded ? 1 : 0
-    layer.enabled: opacity < 1
 
     Behavior on opacity {
         Anim {
@@ -63,6 +62,8 @@ MouseArea {
 
     Elevation {
         id: menu
+
+        layer.enabled: root.opacity > 0 && root.opacity < 1
 
         x: {
             watcher.transform; // mapToItem is not reactive so this forces updates

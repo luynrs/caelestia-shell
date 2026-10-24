@@ -11,6 +11,7 @@
   lm_sensors,
   swappy,
   wl-clipboard,
+  cliphist,
   libqalculate,
   bash,
   hyprland,
@@ -35,7 +36,14 @@
 }: let
   version = "1.0.0";
 
-  qs = quickshell.withModules [qt6.qtimageformats m3shapes];
+  qs = (quickshell.withModules [qt6.qtimageformats m3shapes]).overrideAttrs (_: {
+    installPhase = ''
+      mkdir -p $out
+      cp -r ${quickshell.unwrapped.overrideAttrs (old: {
+        patches = (old.patches or []) ++ [./patches/quickshell-tray-icon-refresh.patch];
+      })}/* $out
+    '';
+  });
 
   runtimeDeps =
     [
@@ -46,6 +54,7 @@
       lm_sensors
       swappy
       wl-clipboard
+      cliphist
       libqalculate
       bash
       hyprland

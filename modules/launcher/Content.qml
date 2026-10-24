@@ -38,7 +38,7 @@ Item {
             content: root
             screenState: root.screenState
             panels: root.panels
-            maxHeight: root.maxHeight - search.implicitHeight - root.padding * 3
+            maxHeight: Math.max(0, root.maxHeight - search.implicitHeight - root.padding * 3)
             search: search
             padding: root.padding
             rounding: root.rounding
@@ -60,11 +60,16 @@ Item {
         bottomPadding: Math.round((Tokens.padding.medium + Tokens.padding.large) / 2)
 
         placeholderText: Tr.tr("Type \"%1\" for commands").arg(GlobalConfig.launcher.actionPrefix)
+        text: root.screenState.launcherQuery
+
+        onTextChanged: root.screenState.launcherQuery = text
 
         onAccepted: {
             const currentItem = list.currentList?.currentItem;
             if (currentItem) {
-                if (list.showWallpapers) {
+                if (list.showClipboard) {
+                    list.currentList.copyEntry(currentItem.modelData);
+                } else if (list.showWallpapers) {
                     if (Colours.scheme === "dynamic" && currentItem.modelData.path !== Wallpapers.actualCurrent)
                         Wallpapers.previewColourLock = true;
                     Wallpapers.setWallpaper(currentItem.modelData.path);
@@ -85,6 +90,16 @@ Item {
         Keys.onDownPressed: list.currentList?.incrementCurrentIndex()
 
         Keys.onEscapePressed: root.screenState.launcher = false
+
+        Keys.onDeletePressed: event => {
+            if (list.showClipboard) {
+                const item = list.currentList?.currentItem;
+                if (item)
+                    Clipboard.remove(item.modelData);
+            } else {
+                event.accepted = false;
+            }
+        }
 
         Keys.onPressed: event => {
             if (!GlobalConfig.launcher.vimKeybinds)
@@ -110,6 +125,13 @@ Item {
         Component.onCompleted: forceActiveFocus()
 
         Connections {
+            function onLauncherQueryChanged(): void {
+                if (search.text !== root.screenState.launcherQuery) {
+                    search.text = root.screenState.launcherQuery;
+                    search.cursorPosition = search.length;
+                }
+            }
+
             function onLauncherChanged(): void {
                 if (!root.screenState.launcher)
                     search.text = "";
@@ -122,5 +144,17 @@ Item {
 
             target: root.screenState
         }
+    }
+
+    StyledText {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: search.top
+        anchors.bottomMargin: Tokens.spacing.extraSmall
+
+        visible: list.showClipboard && Clipboard.error.length > 0
+        text: Clipboard.error
+        textFormat: Text.PlainText
+        color: Colours.palette.m3error
+        font: Tokens.font.body.small
     }
 }

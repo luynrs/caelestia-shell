@@ -21,6 +21,8 @@ Item {
     opacity: shouldBeActive ? 1 : 0
 
     Loader {
+        id: blur
+
         asynchronous: true
         anchors.fill: parent
         active: root.opacity > 0 && Config.background.visualiser.blur
@@ -40,7 +42,8 @@ Item {
         id: wrapper
 
         anchors.fill: parent
-        layer.enabled: true
+        clip: true
+        layer.enabled: blur.active
 
         Loader {
             asynchronous: true
@@ -60,7 +63,7 @@ Item {
 
                     anchors.fill: parent
                     anchors.margins: Config.border.thickness
-                    anchors.leftMargin: (ShellState.componentsFor(root.screen)?.bar?.exclusiveZone ?? 0) + Tokens.spacing.small * Config.background.visualiser.spacing
+                    anchors.leftMargin: Config.border.thickness + Tokens.spacing.small * Config.background.visualiser.spacing
 
                     values: Audio.cava.values
                     primaryColor: Qt.alpha(Colours.palette.m3primary, 0.7)

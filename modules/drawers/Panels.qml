@@ -36,7 +36,7 @@ Item {
 
     anchors.fill: parent
     anchors.margins: borderThickness
-    anchors.leftMargin: bar.implicitWidth
+    anchors.topMargin: bar.implicitHeight
 
     Item {
         id: osdWrapper
@@ -113,7 +113,7 @@ Item {
         screenState: root.screenState
 
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
+        anchors.bottom: parent.bottom
     }
 
     BarPopouts.ClipWrapper {

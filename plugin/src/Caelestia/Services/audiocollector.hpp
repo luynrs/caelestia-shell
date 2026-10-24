@@ -6,10 +6,9 @@
 #include <pipewire/pipewire.h>
 #include <spa/param/audio/format-utils.h>
 
-#include <atomic>
+#include <array>
 #include <stop_token>
 #include <thread>
-#include <vector>
 
 #include "service.hpp"
 
@@ -65,13 +64,9 @@ private:
     ~AudioCollector() override;
 
     std::jthread m_thread;
-    std::vector<float> m_buffer1;
-    std::vector<float> m_buffer2;
-    std::atomic<std::vector<float>*> m_readBuffer;
-    std::atomic<std::vector<float>*> m_writeBuffer;
-    quint32 m_sampleCount;
+    QMutex m_mutex;
+    std::array<float, ac::k_chunkSize> m_buffer{};
 
-    void reload();
     void start() override;
     void stop() override;
 };

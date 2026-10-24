@@ -3,15 +3,15 @@ import QtQuick.Layouts
 import qs.components
 import qs.services
 
-ColumnLayout {
+RowLayout {
     id: root
 
     required property color colour
     required property int parentSpacing
 
     property real gap: Hypr.capsLock && Hypr.numLock ? parentSpacing : 0
-    property real capsHeight: Hypr.capsLock ? capslockIcon.implicitHeight : 0
-    property real numHeight: Hypr.numLock ? numlockIcon.implicitHeight : 0
+    property real capsWidth: Hypr.capsLock ? capslockIcon.implicitWidth : 0
+    property real numWidth: Hypr.numLock ? numlockIcon.implicitWidth : 0
 
     spacing: Math.round(gap)
 
@@ -21,21 +21,21 @@ ColumnLayout {
         }
     }
 
-    Behavior on capsHeight {
+    Behavior on capsWidth {
         Anim {
             type: Anim.SlowEffects
         }
     }
 
-    Behavior on numHeight {
+    Behavior on numWidth {
         Anim {
             type: Anim.SlowEffects
         }
     }
 
     Item {
-        implicitWidth: capslockIcon.implicitWidth
-        implicitHeight: Math.round(root.capsHeight)
+        implicitHeight: capslockIcon.implicitHeight
+        implicitWidth: Math.round(root.capsWidth)
 
         MaterialIcon {
             id: capslockIcon
@@ -63,8 +63,8 @@ ColumnLayout {
     }
 
     Item {
-        implicitWidth: numlockIcon.implicitWidth
-        implicitHeight: Math.round(root.numHeight)
+        implicitHeight: numlockIcon.implicitHeight
+        implicitWidth: Math.round(root.numWidth)
 
         MaterialIcon {
             id: numlockIcon

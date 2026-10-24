@@ -12,16 +12,28 @@ Item {
     id: root
 
     required property PopoutState popouts
-    readonly property Popout currentPopout: content.children.find(c => c.shouldBeActive) ?? null
-    readonly property Item current: currentPopout?.item ?? null
+    readonly property Popout requestedPopout: content.children.find(c => c.name === root.popouts.currentName) ?? null
+    property Popout currentPopout
+    readonly property Item current: currentPopout?.shouldBeActive ? (currentPopout.item as Item) : null
 
     readonly property var trayItemsToIndices: SystemTray.items.values.filter(i => i.status !== Status.Passive && !GlobalConfig.bar.tray.hiddenIcons.includes(i.id)).reduce((acc, item, i) => {
         acc[item.id] = i;
         return acc;
     }, {})
 
-    implicitWidth: currentPopout ? currentPopout.implicitWidth + Tokens.padding.large * 2 : 0
-    implicitHeight: currentPopout ? currentPopout.implicitHeight + Tokens.padding.large * 2 : 0
+    Binding on implicitWidth {
+        when: root.currentPopout?.ready ?? false
+        delayed: true
+        restoreMode: Binding.RestoreNone
+        value: root.currentPopout ? root.currentPopout.implicitWidth + root.Tokens.padding.large * 2 : 0
+    }
+
+    Binding on implicitHeight {
+        when: root.currentPopout?.ready ?? false
+        delayed: true
+        restoreMode: Binding.RestoreNone
+        value: root.currentPopout ? root.currentPopout.implicitHeight + root.Tokens.padding.large * 2 : 0
+    }
 
     Item {
         id: content
@@ -135,26 +147,9 @@ Item {
                 required property SystemTrayItem modelData
 
                 name: `traymenu${root.trayItemsToIndices[modelData.id]}`
-                sourceComponent: trayMenuComp
-
-                Connections {
-                    function onHasCurrentChanged(): void {
-                        if (root.popouts.hasCurrent && trayMenu.shouldBeActive) {
-                            trayMenu.sourceComponent = null;
-                            trayMenu.sourceComponent = trayMenuComp;
-                        }
-                    }
-
-                    target: root.popouts
-                }
-
-                Component {
-                    id: trayMenuComp
-
-                    TrayMenu {
-                        popouts: root.popouts
-                        trayItem: trayMenu.modelData.menu // qmllint disable unresolved-type
-                    }
+                sourceComponent: TrayMenu {
+                    popouts: root.popouts
+                    trayItem: trayMenu.modelData.menu // qmllint disable unresolved-type
                 }
             }
         }
@@ -164,53 +159,24 @@ Item {
         id: popout
 
         required property string name
-        readonly property bool shouldBeActive: root.popouts.currentName === name
-        property bool ready: true
+        readonly property bool ready: status === Loader.Ready && ((item as TrayMenu)?.ready ?? true)
+        readonly property bool shouldBeActive: root.popouts.hasCurrent && root.requestedPopout === popout && ready
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
 
-        anchors.centerIn: parent
+        active: root.requestedPopout === popout || root.currentPopout === popout || opacity > 0
+        enabled: shouldBeActive
+        opacity: shouldBeActive ? 1 : 0
 
-        opacity: 0
-        active: false
-
-        states: State {
-            name: "active"
-            when: popout.shouldBeActive
-
-            PropertyChanges {
-                popout.active: true
-                popout.opacity: 1
-            }
+        onShouldBeActiveChanged: {
+            if (shouldBeActive)
+                root.currentPopout = popout;
         }
 
-        transitions: [
-            Transition {
-                from: "active"
-                to: ""
-
-                SequentialAnimation {
-                    Anim {
-                        property: "opacity"
-                        type: Anim.DefaultEffects
-                    }
-                    PropertyAction {
-                        property: "active"
-                    }
-                }
-            },
-            Transition {
-                from: ""
-                to: "active"
-
-                SequentialAnimation {
-                    PropertyAction {
-                        property: "active"
-                    }
-                    Anim {
-                        property: "opacity"
-                        type: Anim.SlowEffects
-                    }
-                }
+        Behavior on opacity {
+            Anim {
+                type: popout.shouldBeActive ? Anim.SlowEffects : Anim.DefaultEffects
             }
-        ]
+        }
     }
 }

@@ -32,6 +32,15 @@ Item {
     property string detachedMode
     property string queuedMode
 
+    Behavior on currentCenter {
+        enabled: root.offsetScale === 0 && !root.isDetached
+
+        Anim {
+            duration: root.animLength
+            easing: root.animCurve
+        }
+    }
+
     // Dummy object so Tokens attached prop resolves to global config
     // Anim configs are not per-monitor
     readonly property QtObject dummy: QtObject {}
@@ -151,6 +160,8 @@ Item {
     }
 
     Behavior on implicitWidth {
+        enabled: root.offsetScale === 0
+
         Anim {
             duration: root.animLength
             easing: root.animCurve

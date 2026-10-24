@@ -51,6 +51,7 @@ private:
     QString m_source;
     QPointer<QQuickItem> m_sourceItem;
     int m_rescaleSize;
+    quint64 m_update_serial = 0;
 
     QColor m_dominantColour;
     qreal m_luminance;

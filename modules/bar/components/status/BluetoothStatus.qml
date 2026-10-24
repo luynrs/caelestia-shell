@@ -16,13 +16,13 @@ Item {
     implicitWidth: layout.implicitWidth
     implicitHeight: layout.implicitHeight
 
-    Behavior on implicitHeight {
+    Behavior on implicitWidth {
         Anim {
             type: Anim.DefaultEffects
         }
     }
 
-    ColumnLayout {
+    RowLayout {
         id: layout
 
         spacing: Tokens.spacing.medium / 2

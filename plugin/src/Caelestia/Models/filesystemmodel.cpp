@@ -85,7 +85,7 @@ FileSystemModel::FileSystemModel(QObject* parent)
     , m_showHidden(false)
     , m_filter(Filter::NoFilter) {
     connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FileSystemModel::watchDirIfRecursive);
-    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FileSystemModel::updateEntriesForDir);
+    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &FileSystemModel::updateEntries);
 }
 
 int FileSystemModel::rowCount(const QModelIndex& parent) const {
@@ -266,6 +266,11 @@ void FileSystemModel::updateWatcher() {
 }
 
 void FileSystemModel::updateEntries() {
+    for (auto& future : m_futures) {
+        future.cancel();
+    }
+    m_futures.clear();
+
     if (m_path.isEmpty()) {
         if (!m_entries.isEmpty()) {
             beginResetModel();
@@ -277,11 +282,6 @@ void FileSystemModel::updateEntries() {
 
         return;
     }
-
-    for (auto& future : m_futures) {
-        future.cancel();
-    }
-    m_futures.clear();
 
     updateEntriesForDir(m_path);
 }
@@ -309,16 +309,15 @@ void FileSystemModel::updateEntriesForDir(const QString& dir) {
         m_futures[dir].cancel();
     m_futures.insert(dir, future);
 
-    future
-        .then(this,
-            [dir, this](const PathDiff& result) {
-                m_futures.remove(dir);
-                if (!result.removed.isEmpty() || !result.added.isEmpty())
-                    applyChanges(result.removed, result.added);
-            })
-        .onCanceled(this, [dir, this]() {
-            m_futures.remove(dir);
-        });
+    future.then(this, [dir, future, this](const PathDiff& result) {
+        if (future.isCanceled()) {
+            return;
+        }
+        m_futures.remove(dir);
+        if (!result.removed.isEmpty() || !result.added.isEmpty()) {
+            applyChanges(result.removed, result.added);
+        }
+    });
 }
 
 FileSystemModel::ScanFilters FileSystemModel::filtersFor(

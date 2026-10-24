@@ -136,7 +136,7 @@ void Lyrics::setSelectedCandidate(const LyricCandidate& value) {
     setLoading(true);
 
     cancelInFlight();
-    const int reqId = newRequestId();
+    const int reqId = m_currentRequestId;
 
     if (b == LyricsBackend::LRCLIB || b == LyricsBackend::NetEase) {
         const QString cached = readCachedLrc(b, value.id());
@@ -340,14 +340,13 @@ void Lyrics::clearCandidates() {
 }
 
 void Lyrics::scheduleLoad() {
+    cancelInFlight();
     m_loadDebounce->start();
 }
 
-int Lyrics::newRequestId() {
-    return ++m_currentRequestId;
-}
-
 void Lyrics::cancelInFlight() {
+    m_loadDebounce->stop();
+    m_currentRequestId++;
     for (auto it = m_pendingReplies.begin(); it != m_pendingReplies.end(); ++it) {
         for (auto& ptr : it.value()) {
             if (auto* reply = ptr.data()) {
@@ -375,7 +374,7 @@ void Lyrics::doLoad() {
     }
 
     cancelInFlight();
-    const int reqId = newRequestId();
+    const int reqId = m_currentRequestId;
 
     setLoading(true);
     clearLines();

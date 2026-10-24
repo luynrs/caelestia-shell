@@ -442,7 +442,8 @@ QSGNode* BlobShape::updatePaintNode(QSGNode* oldNode, UpdatePaintNodeData* data)
     }
 
     auto* node = static_cast<QSGGeometryNode*>(oldNode);
-    if (!node) {
+    if (!node || node->geometry()->vertexCount() != 4) {
+        delete oldNode;
         node = new QSGGeometryNode;
 
         auto* geometry = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4);
