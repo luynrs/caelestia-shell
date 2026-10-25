@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Caelestia.Config
 import qs.components
 import qs.services
 import qs.modules.notifications as Notifications
@@ -10,6 +11,7 @@ ShellRoot {
     property int failures: 0
     property NotifData notification
     property bool popupActive: true
+    property real closingHeight
 
     function check(condition: bool, message: string): void {
         if (!condition) {
@@ -43,11 +45,11 @@ ShellRoot {
         }
 
         Notifications.Content {
+            id: notifications
             width: 500
             screenState: testState
             osdPanel: container.contentItem
             sessionPanel: container.contentItem
-            utilitiesPanel: container.contentItem
         }
 
         Loader {
@@ -67,15 +69,18 @@ ShellRoot {
     }
 
     Timer {
-        interval: 100
+        interval: Tokens.anim.durations.expressiveDefaultSpatial + 100
         running: true
         onTriggered: {
             root.check(popup.item !== null, "The popup delegate must load");
             root.check(root.notification.locks.size === 2, "Every visible popup must retain its notification");
+            root.closingHeight = notifications.implicitHeight;
+            root.check(root.closingHeight > 0, "The popup viewport must open before dismissal");
             root.notification.close();
             root.check(Notifs.list.length === 1, "Closing must retain data while its delegate is live");
             root.popupActive = false;
             retained.start();
+            closing.start();
             finish.start();
         }
     }
@@ -86,7 +91,14 @@ ShellRoot {
         onTriggered: {
             root.check(root.notification !== null && Notifs.list.length === 1, "A closing popup must retain its data through delayed removal");
             root.check(root.notification?.locks.size === 1, "Removing one delegate must preserve the remaining popup lock");
+            root.check(Math.abs(notifications.implicitHeight - root.closingHeight) < 1, "The popup viewport must retain its height while a delayed delegate exits");
         }
+    }
+
+    Timer {
+        id: closing
+        interval: Tokens.anim.durations.normal / 2
+        onTriggered: root.check(Math.abs(notifications.implicitHeight - root.closingHeight) < 1, "The popup viewport must not shrink midway through its exit slide")
     }
 
     Timer {
@@ -95,6 +107,7 @@ ShellRoot {
         onTriggered: {
             root.check(Notifs.list.length === 0, "Destroying the final delegate must release closed data");
             root.check(root.notification === null, "Closed notification data must be destroyed after its delegates");
+            root.check(notifications.implicitHeight === 0, "The popup viewport must close after its final delegate exits");
             root.notification = notificationComponent.createObject(root);
             Notifs.list = [root.notification];
             root.popupActive = true;

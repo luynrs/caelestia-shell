@@ -6,6 +6,9 @@ source "$source_dir/tests/fixtures/harness.sh"
 cp "$source_dir/tests/fixtures/Hypr.qml" "$test_dir/services/Hypr.qml"
 cp "$source_dir/tests/fixtures/Wallpapers.qml" "$test_dir/services/Wallpapers.qml"
 cp "$source_dir/tests/${1:-ClipboardLauncher.qml}" "$test_dir/shell.qml"
+if [[ ${1:-} == ClipboardBounds.qml ]]; then
+    export CAELESTIA_CLIPBOARD_MANY_ENTRIES=1
+fi
 if [[ ${1:-} == ClipboardShortcut.qml ]]; then
     rm "$test_dir/components"
     cp -r "$source_dir/components" "$test_dir/components"

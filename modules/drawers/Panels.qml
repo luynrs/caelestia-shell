@@ -35,6 +35,7 @@ Item {
     readonly property alias sidebar: sidebar
 
     anchors.fill: parent
+    clip: true
     anchors.margins: borderThickness
     anchors.topMargin: bar.implicitHeight
 
@@ -68,9 +69,16 @@ Item {
         sidebarPanel: sidebar
         osdPanel: osdWrapper
         sessionPanel: sessionWrapper
-        utilitiesPanel: utilities
+        maxHeight: {
+            let bottom = parent.height;
+            if (utilities.visible && !utilities.attachedToSidebar)
+                bottom = Math.min(bottom, utilities.y);
+            if (toasts.height > 0)
+                bottom -= toasts.height + Tokens.padding.medium;
+            return Math.max(0, bottom);
+        }
 
-        anchors.top: parent.top
+        anchors.bottom: utilities.visible && !utilities.attachedToSidebar ? utilities.top : parent.bottom
         anchors.right: parent.right
     }
 
@@ -137,7 +145,7 @@ Item {
     Toasts.Toasts {
         id: toasts
 
-        anchors.bottom: sidebar.visible ? parent.bottom : utilities.top
+        anchors.bottom: notifications.visible ? notifications.top : sidebar.visible ? parent.bottom : utilities.top
         anchors.right: sidebar.left
         anchors.margins: Tokens.padding.medium
     }
@@ -147,9 +155,8 @@ Item {
 
         screenState: root.screenState
 
-        anchors.top: notifications.bottom
-        anchors.bottom: utilities.top
+        anchors.top: utilities.attachedToSidebar ? utilities.bottom : parent.top
+        anchors.bottom: parent.bottom
         anchors.right: parent.right
-        anchors.topMargin: -notifications.anchors.topMargin
     }
 }

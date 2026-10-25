@@ -3,7 +3,7 @@ trap 'rm -rf -- "$test_dir"' EXIT
 for directory in components modules utils assets; do
     ln -s "$source_dir/$directory" "$test_dir/$directory"
 done
-mkdir -p "$test_dir/services" "$test_dir/bin" "$test_dir/cache" "$test_dir/state/caelestia/wallpaper"
+mkdir -p "$test_dir/services" "$test_dir/bin" "$test_dir/cache" "$test_dir/config" "$test_dir/state/caelestia/wallpaper"
 for service in "$source_dir/services/"*; do
     case ${service##*/} in
         Hypr.qml|Weather.qml|Wallpapers.qml) ;;
@@ -31,6 +31,7 @@ for command in nmcli ddcutil brightnessctl asdbctl caelestia; do
 done
 export PATH="$test_dir/bin:$PATH"
 export XDG_CACHE_HOME="$test_dir/cache"
+export XDG_CONFIG_HOME="$test_dir/config"
 export XDG_STATE_HOME="$test_dir/state"
 
 run_test() {

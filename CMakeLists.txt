@@ -59,6 +59,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wunused-lambda-capture -Wno-nonportable-include-path)
 endif()
 
+if(BUILD_TESTING)
+    enable_testing()
+endif()
+
 if("extras" IN_LIST ENABLE_MODULES)
     add_subdirectory(extras)
 endif()

@@ -1,6 +1,9 @@
 import QtQuick
 import QtTest
 import Quickshell
+import Caelestia
+import Caelestia.Config
+import qs.services
 import qs.modules.drawers as Drawers
 
 ShellRoot {
@@ -8,6 +11,7 @@ ShellRoot {
 
     property int failures: 0
     property int step: 0
+    property int closingSamples: 0
 
     function check(condition: bool, message: string): void {
         if (!condition) {
@@ -18,6 +22,28 @@ ShellRoot {
 
     function move(x: real, y: real): void {
         check(events.mouseMove(window.interactionWrapper, x, y, 0, Qt.NoButton, Qt.NoModifier), "Pointer event must reach the drawer window");
+    }
+
+    function findItem(parent: Item, name: string): Item {
+        if (parent.objectName === name)
+            return parent;
+        for (const child of parent.children) {
+            const found = findItem(child, name);
+            if (found)
+                return found;
+        }
+        return null;
+    }
+
+    Component {
+        id: notificationComponent
+        NotifData {
+            popup: true
+            hints: ({})
+            summary: "Popup placement regression"
+            body: "Notifications must remain inside the available lower-right area."
+            expireTimeout: 60000
+        }
     }
 
     TestEvent {
@@ -38,6 +64,30 @@ ShellRoot {
     }
 
     Timer {
+        id: closingProbe
+        interval: 16
+        repeat: true
+        onTriggered: {
+            const panels = window.interactionWrapper.panels;
+            if (!panels.sidebar.visible) {
+                stop();
+                return;
+            }
+            const popup = panels.notifications;
+            const toast = panels.toasts;
+            if (popup.height <= 0 || toast.height <= 0)
+                return;
+            root.closingSamples++;
+            const overlapWidth = Math.min(popup.x + popup.width, toast.x + toast.width) - Math.max(popup.x, toast.x);
+            const overlapHeight = Math.min(popup.y + popup.height, toast.y + toast.height) - Math.max(popup.y, toast.y);
+            if (overlapWidth > 2 && overlapHeight > 2) {
+                root.check(false, "A popup arriving during sidebar dismissal must not overlap internal toasts");
+                stop();
+            }
+        }
+    }
+
+    Timer {
         interval: 650
         running: true
         repeat: true
@@ -46,11 +96,18 @@ ShellRoot {
             const panels = window.interactionWrapper.panels;
             switch (root.step++) {
             case 0:
+                root.check(panels.sidebar.height >= 0, "Closed sidebar geometry must remain nonnegative");
                 root.move(window.width - 1, 1);
                 root.check(!state.sidebar, "Top-right corner must no longer open the sidebar");
                 state.sidebar = false;
+                Notifs.list = [notificationComponent.createObject(root)];
+                Toaster.toast("Toast placement regression", "Internal messages must not cover notifications", "info", Toast.Info, 10000);
                 break;
             case 1:
+                root.check(panels.notifications.height > 0, "The placement fixture must show a popup");
+                root.check(Math.abs(panels.notifications.y + panels.notifications.height - panels.height - 5) < 1, "Popup notifications must stay anchored to the bottom");
+                root.check(Math.abs(panels.notifications.x + panels.notifications.width - panels.width) < 1, "Popup notifications must stay anchored to the right");
+                root.check(panels.toasts.height > 0 && panels.toasts.y + panels.toasts.height <= panels.notifications.y, "Internal toast messages must not cover notification popups");
                 root.move(1, window.height - 1);
                 root.check(!state.sidebar, "Bottom-left corner must not be the sidebar trigger");
                 state.sidebar = false;
@@ -63,16 +120,58 @@ ShellRoot {
                 root.move(window.width - 20, window.height / 2);
                 root.check(state.sidebar, "Entering the right sidebar must keep it open");
                 root.check(panels.sidebar.x + panels.sidebar.width >= panels.width - 1, "Sidebar must retain its right-edge position");
-                root.check(Math.abs(panels.utilities.y + panels.utilities.height - panels.height) < 1, "Utility cards must retain their bottom position");
-                root.check(panels.notifications.y < 1, "Popup notifications must retain their top position");
+                root.check(Math.abs(panels.utilities.y) < 1, "Sidebar utility controls must start at the top");
+                const toggles = root.findItem(panels, "utilitiesQuickToggles");
+                const notifications = root.findItem(panels, "sidebarNotifications");
+                const keepAwake = root.findItem(panels, "utilitiesKeepAwake");
+                const recorder = root.findItem(panels, "utilitiesScreenRecorder");
+                root.check(toggles !== null && notifications !== null && keepAwake !== null && recorder !== null, "All sidebar sections must load");
+                if (toggles && notifications && keepAwake && recorder) {
+                    root.check(toggles.mapToItem(panels, 0, toggles.height).y < keepAwake.mapToItem(panels, 0, 0).y, "Quick toggles must precede keep-awake controls");
+                    root.check(keepAwake.mapToItem(panels, 0, keepAwake.height).y < recorder.mapToItem(panels, 0, 0).y, "Keep-awake must precede the recorder");
+                    root.check(recorder.mapToItem(panels, 0, recorder.height).y < notifications.mapToItem(panels, 0, 0).y, "Notification history must follow all utility controls");
+                }
                 break;
             case 4:
                 root.move(window.width / 2, window.height / 2);
                 root.check(!state.sidebar, "Leaving the right sidebar must close it");
+                Notifs.list = [notificationComponent.createObject(root)];
+                closingProbe.start();
                 break;
             case 5:
+                root.check(root.closingSamples > 0, "Dismissal overlap checks must observe the closing animation");
                 root.move(1, window.height - 1);
                 root.check(!state.sidebar, "Returning to the bottom-left corner must keep the sidebar closed");
+                state.utilities = true;
+                Notifs.list = Array.from({length: 20}, () => notificationComponent.createObject(root));
+                break;
+            case 6:
+                root.check(panels.notifications.height > 0 && panels.notifications.y >= -1, "A large popup stack must fit below the top bar");
+                root.check(panels.notifications.y + panels.notifications.height <= panels.utilities.y + 6, "Popups must stay above the open utility controls");
+                root.check(panels.toasts.y >= -1, "Combined toast and popup stacks must stay below the top bar");
+                const standaloneToggles = root.findItem(panels.utilities, "utilitiesQuickToggles");
+                const standaloneKeepAwake = root.findItem(panels.utilities, "utilitiesKeepAwake");
+                root.check(standaloneToggles !== null && standaloneKeepAwake !== null, "Standalone utilities must retain quick toggles");
+                if (standaloneToggles && standaloneKeepAwake)
+                    root.check(standaloneToggles.mapToItem(panels, 0, standaloneToggles.height).y < standaloneKeepAwake.mapToItem(panels, 0, 0).y, "Standalone quick toggles must also remain first");
+                state.utilities = false;
+                state.osd = true;
+                break;
+            case 7:
+                root.check(panels.notifications.y >= panels.osdWrapper.y + panels.osdWrapper.height - 1, "Popups must stay below the visible OSD");
+                root.check(panels.notifications.y + panels.notifications.height <= panels.height + 6, "OSD must not push popups past the bottom edge");
+                state.osd = false;
+                state.session = true;
+                break;
+            case 8:
+                root.check(panels.notifications.y >= panels.sessionWrapper.y + panels.sessionWrapper.height - 1, "Popups must stay below the visible session menu");
+                root.check(panels.notifications.y + panels.notifications.height <= panels.height + 6, "Session menu must not push popups past the bottom edge");
+                state.session = false;
+                GlobalConfig.sidebar.enabled = false;
+                state.sidebar = true;
+                break;
+            case 9:
+                root.check(!panels.sidebar.visible && root.findItem(panels.utilities, "utilitiesQuickToggles") !== null, "A disabled sidebar must not hide quick toggles from the remaining utility controls");
                 console.log("Sidebar hover failures:", root.failures);
                 Qt.exit(root.failures === 0 ? 0 : 1);
             }

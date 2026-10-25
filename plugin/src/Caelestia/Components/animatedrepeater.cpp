@@ -109,8 +109,10 @@ void AnimatedRepeater::setModel(const QVariant& model) {
     if (m_componentComplete && oldMode == Mode::Count && m_mode == Mode::Count) {
         if (m_modelCount > oldCount)
             insertItems(oldCount, m_modelCount - 1, true);
-        else if (m_modelCount < oldCount)
+        else if (m_modelCount < oldCount) {
             removeItems(m_modelCount, oldCount - 1, true);
+            emit countChanged();
+        }
     } else {
         regenerate();
     }
@@ -332,12 +334,13 @@ void AnimatedRepeater::removeItems(int first, int last, bool animate) {
     }
 
     updateIndices(first);
-    emit countChanged();
 }
 
 void AnimatedRepeater::clearItems(bool animate) {
-    if (!m_items.isEmpty())
+    if (!m_items.isEmpty()) {
         removeItems(0, static_cast<int>(m_items.size()) - 1, animate);
+        emit countChanged();
+    }
 }
 
 void AnimatedRepeater::destroyItem(QQuickItem* item) {
@@ -400,6 +403,10 @@ void AnimatedRepeater::connectModel() {
         connect(m_itemModel, &QAbstractItemModel::rowsInserted, this, &AnimatedRepeater::onRowsInserted),
         connect(
             m_itemModel, &QAbstractItemModel::rowsAboutToBeRemoved, this, &AnimatedRepeater::onRowsAboutToBeRemoved),
+        connect(m_itemModel, &QAbstractItemModel::rowsRemoved, this, [this](const QModelIndex& parent) {
+            if (!parent.isValid())
+                emit countChanged();
+        }),
         connect(m_itemModel, &QAbstractItemModel::rowsMoved, this, &AnimatedRepeater::onRowsMoved),
         connect(m_itemModel, &QAbstractItemModel::dataChanged, this, &AnimatedRepeater::onDataChanged),
         connect(m_itemModel, &QAbstractItemModel::modelReset, this, &AnimatedRepeater::regenerate),

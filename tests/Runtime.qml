@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Caelestia.Config
 import qs.components.controls as Controls
 import qs.services
 import qs.services as Services
@@ -40,6 +41,7 @@ ShellRoot {
         }
         root.monitor = Brightness.monitors[0];
 
+        GlobalConfig.services.weatherLocation = "unresolvable test location";
         Weather.fetchCoordsFromCity("unresolvable test location");
         root.check(Services.Requests.pendingRequests.length === 1, "Weather must start one geocoding request");
         Services.Requests.pendingRequests[0].success('{"results":[]}');

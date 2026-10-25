@@ -29,7 +29,7 @@ PageBase {
         // e.g. "Quickshell 0.3.0 (revision ...)"
         Process {
             running: true
-            command: ["quickshell", "--version"]
+            command: ["/proc/self/exe", "--version"]
             stdout: StdioCollector {
                 onStreamFinished: root.quickshellVersion = text.trim().split(" ")[1] ?? ""
             }

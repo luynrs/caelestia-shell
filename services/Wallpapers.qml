@@ -42,8 +42,8 @@ Searcher {
         previewPath = path;
         showPreview = true;
 
-        if (Colours.scheme === "dynamic")
-            getPreviewColoursProc.running = true;
+        if (Colours.scheme === "dynamic" && !getPreviewColoursProc.running)
+            getPreviewColoursProc.exec(["caelestia", "wallpaper", "-p", path, ...smartArg]);
     }
 
     function stopPreview(): void {
@@ -114,10 +114,16 @@ Searcher {
     Process {
         id: getPreviewColoursProc
 
-        command: ["caelestia", "wallpaper", "-p", root.previewPath, ...root.smartArg]
         stdout: StdioCollector {
-            onStreamFinished: {
-                Colours.load(text, true);
+            id: previewOutput
+        }
+        onExited: (exitCode, exitStatus) => { // qmllint disable signal-handler-parameters
+            if (!root.showPreview || Colours.scheme !== "dynamic")
+                return;
+            if (command[3] !== root.previewPath) {
+                root.preview(root.previewPath);
+            } else if (exitCode === 0 && exitStatus === 0) {
+                Colours.load(previewOutput.text, true);
                 Colours.showPreview = true;
             }
         }

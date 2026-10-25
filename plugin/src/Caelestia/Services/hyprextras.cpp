@@ -115,11 +115,13 @@ void HyprExtras::applyOptions(const QVariantHash& options) {
 
 void HyprExtras::refreshOptions() {
     if (!m_optionsRefresh.isNull()) {
-        m_optionsRefresh->close();
+        QObject::disconnect(m_optionsRefresh.data(), nullptr, this, nullptr);
+        m_optionsRefresh->abort();
+        m_optionsRefresh->deleteLater();
     }
 
     m_optionsRefresh = makeRequestJson(u"descriptions"_s, [this](bool success, const QJsonDocument& response) {
-        m_optionsRefresh.reset();
+        m_optionsRefresh.clear();
         if (!success) {
             return;
         }
@@ -145,11 +147,13 @@ void HyprExtras::refreshOptions() {
 
 void HyprExtras::refreshDevices() {
     if (!m_devicesRefresh.isNull()) {
-        m_devicesRefresh->close();
+        QObject::disconnect(m_devicesRefresh.data(), nullptr, this, nullptr);
+        m_devicesRefresh->abort();
+        m_devicesRefresh->deleteLater();
     }
 
     m_devicesRefresh = makeRequestJson(u"devices"_s, [this](bool success, const QJsonDocument& response) {
-        m_devicesRefresh.reset();
+        m_devicesRefresh.clear();
         if (success) {
             m_devices->updateLastIpcObject(response.object());
         }
@@ -173,11 +177,8 @@ void HyprExtras::socketStateChanged(QLocalSocket::LocalSocketState state) {
 }
 
 void HyprExtras::readEvent() {
-    while (true) {
+    while (m_socket->canReadLine()) {
         auto rawEvent = m_socket->readLine();
-        if (rawEvent.isEmpty()) {
-            break;
-        }
         rawEvent.truncate(rawEvent.length() - 1); // Remove trailing \n
         const auto sep = rawEvent.indexOf(">>");
         if (sep < 0) {
@@ -199,7 +200,8 @@ void HyprExtras::handleEvent(const QString& event) {
 HyprExtras::SocketPtr HyprExtras::makeRequestJson(
     const QString& request, const std::function<void(bool, QJsonDocument)>& callback) {
     return makeRequest(u"j/"_s + request, [callback](bool success, const QByteArray& response) {
-        callback(success, QJsonDocument::fromJson(response));
+        const auto document = QJsonDocument::fromJson(response);
+        callback(success && !document.isNull(), document);
     });
 }
 
@@ -209,23 +211,28 @@ HyprExtras::SocketPtr HyprExtras::makeRequest(
         return {};
     }
 
-    auto socket = SocketPtr::create(this);
+    auto* socket = new QLocalSocket(this);
 
-    QObject::connect(socket.data(), &QLocalSocket::connected, this, [=, this]() {
-        QObject::connect(socket.data(), &QLocalSocket::readyRead, this, [socket, callback]() {
-            auto response = socket->readAll();
-            callback(true, std::move(response));
-            socket->close();
-        });
-
+    QObject::connect(socket, &QLocalSocket::connected, this, [socket, request]() {
         socket->write(request.toUtf8());
         socket->flush();
     });
 
-    QObject::connect(socket.data(), &QLocalSocket::errorOccurred, this, [=](QLocalSocket::LocalSocketError err) {
+    QObject::connect(socket, &QLocalSocket::disconnected, this, [this, socket, callback]() {
+        QObject::disconnect(socket, nullptr, this, nullptr);
+        socket->deleteLater();
+        callback(true, socket->readAll());
+    });
+
+    QObject::connect(socket, &QLocalSocket::errorOccurred, this, [this, socket, request, callback](QLocalSocket::LocalSocketError err) {
+        if (err == QLocalSocket::PeerClosedError)
+            return;
+
         qCWarning(lcHypr) << "makeRequest: error making request:" << err << "| request:" << request;
+        QObject::disconnect(socket, nullptr, this, nullptr);
+        socket->abort();
+        socket->deleteLater();
         callback(false, {});
-        socket->close();
     });
 
     socket->connectToServer(m_requestSocket);

@@ -57,8 +57,6 @@ Region {
 
     R {
         panel: root.panels.notifications
-        y: 0
-        height: panel.height + root.bar.implicitHeight
     }
 
     R {

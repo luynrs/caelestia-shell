@@ -40,6 +40,21 @@ ShellRoot {
                 clipboard.pressed();
                 root.check(state.launcher && state.launcherQuery === `${GlobalConfig.launcher.actionPrefix}clipboard `, "Clipboard shortcut must switch an open application search into history");
             }
+            const calculator = ShellState.shortcuts.find(shortcut => shortcut.name === "calculator");
+            root.check(calculator !== undefined, "Calculator shortcut must be registered");
+            if (calculator) {
+                state.dashboard = true;
+                calculator.pressed();
+                root.check(state.launcher && !state.dashboard, "Calculator shortcut must open the launcher exclusively");
+                root.check(state.launcherQuery === `${GlobalConfig.launcher.actionPrefix}calc `, "Calculator shortcut must use the configured command prefix");
+                state.launcherQuery += "1 + 2";
+                calculator.pressed();
+                root.check(!state.launcher && state.launcherQuery === "", "Calculator shortcut must close an active calculation and clear its query");
+                state.launcherQuery = `${GlobalConfig.launcher.actionPrefix}clipboard `;
+                state.launcher = true;
+                calculator.pressed();
+                root.check(state.launcher && state.launcherQuery === `${GlobalConfig.launcher.actionPrefix}calc `, "Calculator shortcut must switch clipboard history into calculator mode");
+            }
             console.log("Clipboard shortcut failures:", root.failures);
             Qt.exit(root.failures === 0 ? 0 : 1);
         }

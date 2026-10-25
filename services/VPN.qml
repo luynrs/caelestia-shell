@@ -219,6 +219,13 @@ Singleton {
 
     function checkStatus(): void {
         if (root.selectedProvider.length > 0) {
+            if (statusProc.running) {
+                statusCheckTimer.restart();
+                return;
+            }
+
+            statusProc.endpoint = root.active;
+            statusProc.command = statusProc.endpoint.statusCmd;
             statusProc.running = true;
         }
     }
@@ -616,7 +623,8 @@ Singleton {
     Process {
         id: statusProc
 
-        command: root.active.statusCmd
+        property var endpoint
+
         // qmllint disable incompatible-type
         environment: ({
                 // qmllint enable incompatible-type
@@ -625,13 +633,18 @@ Singleton {
             })
         stdout: StdioCollector {
             onStreamFinished: {
-                const newStatus = root.active.parse(text);
+                if (statusProc.endpoint !== root.active) {
+                    statusCheckTimer.start();
+                    return;
+                }
+
+                const newStatus = statusProc.endpoint.parse(text);
                 root.updateStatus(newStatus);
             }
         }
         stderr: StdioCollector {
             onStreamFinished: {
-                if (text.trim().length === 0)
+                if (statusProc.endpoint !== root.active || text.trim().length === 0)
                     return;
 
                 const daemonDown = text.includes("doesn't appear to be running") || text.includes("failed to connect") || text.includes("daemon is not running") || (text.includes("not running") && root.active.service);

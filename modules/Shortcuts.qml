@@ -86,6 +86,25 @@ Scope {
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
+        name: "calculator"
+        description: "Toggle calculator"
+        onPressed: {
+            if (root.hasFullscreen)
+                return;
+            const screenState = ShellState.forActive();
+            const query = `${GlobalConfig.launcher.actionPrefix}calc`;
+            if (screenState.launcher && (screenState.launcherQuery === query || screenState.launcherQuery.startsWith(query + " "))) {
+                screenState.launcher = false;
+            } else {
+                screenState.launcherQuery = query + " ";
+                screenState.launcher = true;
+            }
+        }
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
         name: "clipboard"
         description: "Toggle clipboard history"
         onPressed: {

@@ -28,6 +28,21 @@ Item {
         spacing: Tokens.spacing.medium
 
         Loader {
+            id: toggles
+
+            Layout.fillWidth: true
+            active: Config.utilities.cards.quickToggles
+            visible: active
+
+            sourceComponent: Toggles {
+                objectName: "utilitiesQuickToggles"
+
+                screenState: root.screenState
+                popouts: root.popouts
+            }
+        }
+
+        Loader {
             id: idleInhibit
 
             Layout.fillWidth: true
@@ -52,21 +67,6 @@ Item {
 
                 props: root.props
                 screenState: root.screenState
-            }
-        }
-
-        Loader {
-            id: toggles
-
-            Layout.fillWidth: true
-            active: Config.utilities.cards.quickToggles
-            visible: active
-
-            sourceComponent: Toggles {
-                objectName: "utilitiesQuickToggles"
-
-                screenState: root.screenState
-                popouts: root.popouts
             }
         }
     }

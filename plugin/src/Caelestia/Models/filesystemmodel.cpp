@@ -181,10 +181,12 @@ void FileSystemModel::setSortReverse(bool sortReverse) {
         return;
     }
 
+    beginResetModel();
     m_sortReverse = sortReverse;
+    std::ranges::reverse(m_entries);
+    endResetModel();
     emit sortReverseChanged();
-
-    update();
+    emit entriesChanged();
 }
 
 FileSystemModel::Filter FileSystemModel::filter() const {

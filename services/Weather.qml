@@ -184,6 +184,9 @@ Singleton {
         };
 
         Requests.get(nominatimUrl, text => {
+            if (coords !== loc)
+                return;
+
             let geo;
             try {
                 geo = JSON.parse(text).features?.[0]?.properties.geocoding;
@@ -205,6 +208,9 @@ Singleton {
             console.warn(lc, "No locality in nominatim response");
             city = Tr.trCtx("Unknown city", "weather location unavailable");
         }, error => {
+            if (coords !== loc)
+                return;
+
             console.warn(lc, `Nominatim request failed: ${error}`);
             city = Tr.trCtx("Unknown city", "weather location unavailable");
         }, nominatimHeaders);
@@ -215,6 +221,9 @@ Singleton {
         const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=${lang}&format=json`;
 
         Requests.get(url, text => {
+            if (GlobalConfig.services.weatherLocation !== cityName)
+                return;
+
             const json = JSON.parse(text);
             if (json.results && json.results.length > 0) {
                 const result = json.results[0];
@@ -232,6 +241,9 @@ Singleton {
             return;
 
         Requests.get(url, text => {
+            if (url !== getWeatherUrl())
+                return;
+
             const json = JSON.parse(text);
             if (!json.current || !json.daily)
                 return;

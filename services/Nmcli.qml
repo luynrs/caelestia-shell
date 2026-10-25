@@ -73,23 +73,34 @@ Singleton {
         return (error.includes("Secrets were required") || error.includes("Secrets were required, but not provided") || error.includes("No secrets provided") || error.includes("802-11-wireless-security.psk") || error.includes("password for") || (error.includes("password") && !error.includes("Connection activated") && !error.includes("successfully")) || (error.includes("Secrets") && !error.includes("Connection activated") && !error.includes("successfully")) || (error.includes("802.11") && !error.includes("Connection activated") && !error.includes("successfully"))) && !error.includes("Connection activated") && !error.includes("successfully");
     }
 
+    function parseFields(line: string): list<string> {
+        const fields = [""];
+        for (let i = 0; i < line.length; i++) {
+            const character = line[i];
+            if (character === "\\" && (line[i + 1] === "\\" || line[i + 1] === ":")) {
+                fields[fields.length - 1] += line[++i];
+            } else if (character === ":") {
+                fields.push("");
+            } else {
+                fields[fields.length - 1] += character;
+            }
+        }
+        return fields;
+    }
+
     function parseNetworkOutput(output: string): list<var> {
         if (!output || output.length === 0) {
             return [];
         }
 
-        const PLACEHOLDER = "STRINGWHICHHOPEFULLYWONTBEUSED";
-        const rep = new RegExp("\\\\:", "g");
-        const rep2 = new RegExp(PLACEHOLDER, "g");
-
-        const allNetworks = output.trim().split("\n").filter(line => line && line.length > 0).map(n => {
-            const net = n.replace(rep, PLACEHOLDER).split(":");
+        const allNetworks = output.split("\n").filter(line => line && line.length > 0).map(n => {
+            const net = parseFields(n);
             return {
                 active: net[0] === "yes",
                 strength: parseInt(net[1] || "0", 10) || 0,
                 frequency: parseInt(net[2] || "0", 10) || 0,
-                ssid: (net[3]?.replace(rep2, ":") ?? "").trim(),
-                bssid: (net[4]?.replace(rep2, ":") ?? "").trim(),
+                ssid: net[3] ?? "",
+                bssid: net[4] ?? "",
                 security: (net[5] ?? "").trim()
             };
         }).filter(n => n.ssid && n.ssid.length > 0);
@@ -135,10 +146,10 @@ Singleton {
         }
 
         const interfaces = [];
-        const lines = output.trim().split("\n");
+        const lines = output.split("\n");
 
         for (const line of lines) {
-            const parts = line.split(":");
+            const parts = parseFields(line);
             if (parts.length >= 2) {
                 const deviceType = parts[1];
                 let shouldInclude = false;
@@ -359,7 +370,6 @@ Singleton {
 
     function connectToNetworkWithPasswordCheck(ssid: string, isSecure: bool, callback: var, bssid: string): void {
         if (isSecure) {
-            const hasBssid = bssid !== undefined && bssid !== null && bssid.length > 0;
             connectWireless(ssid, "", bssid, result => {
                 if (result.success) {
                     if (callback)
@@ -505,12 +515,12 @@ Singleton {
     }
 
     function parseConnectionList(output: string, callback: var): void {
-        const lines = output.trim().split("\n").filter(line => line.length > 0);
+        const lines = output.split("\n").filter(line => line.length > 0);
         const wifiConnections = [];
         const connections = [];
 
         for (const line of lines) {
-            const parts = line.split(":");
+            const parts = parseFields(line);
             if (parts.length >= 2) {
                 const name = parts[0];
                 const type = parts[1];
@@ -564,9 +574,9 @@ Singleton {
 
         let ssid = "";
         let keyMgmt = "";
-        for (const line of output.trim().split("\n")) {
+        for (const line of output.split("\n")) {
             if (line.startsWith(ssidPrefix))
-                ssid = line.substring(ssidPrefix.length).trim();
+                ssid = line.substring(ssidPrefix.length);
             else if (line.startsWith(keyMgmtPrefix))
                 keyMgmt = line.substring(keyMgmtPrefix.length).trim();
         }
@@ -911,22 +921,26 @@ Singleton {
     }
 
     function checkPendingConnection(): void {
-        if (root.pendingConnection) {
+        const pending = root.pendingConnection;
+        if (pending) {
             Qt.callLater(() => {
-                const connected = root.active && root.active.ssid === root.pendingConnection.ssid;
+                if (root.pendingConnection !== pending)
+                    return;
+
+                const connected = root.active && root.active.ssid === pending.ssid;
                 if (connected) {
                     connectionCheckTimer.stop();
                     immediateCheckTimer.stop();
                     immediateCheckTimer.checkCount = 0;
-                    if (root.pendingConnection.callback) {
-                        root.pendingConnection.callback({
+                    root.pendingConnection = null;
+                    if (pending.callback) {
+                        pending.callback({
                             success: true,
                             output: "Connected",
                             error: "",
                             exitCode: 0
                         });
                     }
-                    root.pendingConnection = null;
                 } else {
                     if (!immediateCheckTimer.running) {
                         immediateCheckTimer.start();
@@ -942,7 +956,7 @@ Singleton {
             return "";
         }
 
-        const mask = (0xffffffff << (32 - cidrNum)) >>> 0;
+        const mask = cidrNum === 0 ? 0 : (0xffffffff << (32 - cidrNum)) >>> 0;
         const octet1 = (mask >>> 24) & 0xff;
         const octet2 = (mask >>> 16) & 0xff;
         const octet3 = (mask >>> 8) & 0xff;
