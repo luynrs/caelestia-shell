@@ -83,7 +83,7 @@ Singleton {
     readonly property string interfaceName: active.interface
     readonly property var currentConfig: active
 
-    readonly property var adapters: [wireguardAdapter, warpAdapter, netbirdAdapter, tailscaleAdapter]
+    readonly property var adapters: [justrayAdapter, wireguardAdapter, warpAdapter, netbirdAdapter, tailscaleAdapter]
 
     // Live list of configured providers, straight from the typed config list.
     // Each entry is a config node with id/name/displayName/interface and the
@@ -497,10 +497,6 @@ Singleton {
             pingMs = -1;
         }
 
-        // Update config flag, but not on provider switch
-        if (pendingSwitchProvider.length === 0 && GlobalConfig.utilities.vpn.enabled !== connected)
-            GlobalConfig.utilities.vpn.enabled = connected;
-
         if (!connected && pendingSwitchProvider.length > 0) {
             const id = pendingSwitchProvider;
             pendingSwitchProvider = "";
@@ -550,6 +546,38 @@ Singleton {
     // One adapter per built-in provider, holding everything that is specific
     // to it. Supporting a new provider means adding one adapter here (plus a
     // parser if it has a status command) - nothing else changes.
+
+    Adapter {
+        id: justrayAdapter
+
+        name: "justray"
+        display: "Justray"
+        iface: "justray"
+        connectCmd: ["justray", "up"]
+        disconnectCmd: ["justray", "down"]
+        statusCmd: ["justray", "status", "--json"]
+        parse: output => {
+            const status = {
+                connected: false,
+                state: "error",
+                reason: Tr.mark("Failed to parse status"),
+                authUrl: "",
+                server: ""
+            };
+            try {
+                const data = JSON.parse(output);
+                if (typeof data.connected !== "boolean")
+                    return status;
+                status.connected = data.connected;
+                status.state = data.error ? "error" : data.connected ? "connected" : "disconnected";
+                status.reason = data.error || "";
+                status.server = data.server || "";
+            } catch (error) {
+                return status;
+            }
+            return status;
+        }
+    }
 
     Adapter {
         id: wireguardAdapter

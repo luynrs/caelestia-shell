@@ -30,7 +30,7 @@ Item {
             return 0;
 
         let availableHeight = maxHeight;
-        if (screenState.osd)
+        if (screenState.osd && osdPanel.x + osdPanel.width > parent.x + x)
             availableHeight = Math.min(availableHeight, maxHeight - osdPanel.y - osdPanel.height - clampedPadding);
         if (screenState.session)
             availableHeight = Math.min(availableHeight, maxHeight - sessionPanel.y - sessionPanel.height - clampedPadding);

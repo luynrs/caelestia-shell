@@ -1,10 +1,10 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
-import qs.components.filedialog
 import qs.components.widgets
 import qs.services
 import qs.utils
@@ -56,9 +56,9 @@ Item {
                             id: dialog
 
                             title: Tr.tr("Select a wallpaper")
-                            filterLabel: Tr.tr("Image files")
-                            filters: Images.validImageExtensions
-                            onAccepted: path => Wallpapers.setWallpaper(path)
+                            currentFolder: Qt.resolvedUrl(Paths.home)
+                            nameFilters: [Tr.tr("Image files") + ` (${Images.validImageExtensions.map(extension => "*." + extension).join(" ")})`]
+                            onAccepted: Wallpapers.setWallpaper(Paths.toLocalFile(selectedFile))
                         }
 
                         StateLayer {

@@ -104,13 +104,13 @@ Item {
     }
 
     HyprlandFocusGrab {
-        active: root.isDetached
+        active: root.isDetached && !(nexus.item?.fileDialogOpen ?? false)
         windows: [QsWindow.window]
         onCleared: root.close()
     }
 
     Binding {
-        when: root.isDetached || (root.hasCurrent && root.currentName === "wirelesspassword")
+        when: (root.isDetached && !(nexus.item?.fileDialogOpen ?? false)) || (root.hasCurrent && root.currentName === "wirelesspassword")
 
         target: QsWindow.window
         property: "WlrLayershell.keyboardFocus"
@@ -147,6 +147,8 @@ Item {
         anchors.centerIn: parent
 
         sourceComponent: ClipRect {
+            readonly property alias fileDialogOpen: nexusInner.nState.fileDialogOpen
+
             radius: Tokens.rounding.extraLarge
             implicitWidth: nexusInner.implicitWidth
             implicitHeight: nexusInner.implicitHeight

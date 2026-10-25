@@ -1,12 +1,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import Quickshell
 import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
-import qs.components.filedialog
 import qs.utils
 
 Item {
@@ -15,10 +15,11 @@ Item {
     required property ScreenState screenState
     readonly property FileDialog facePicker: FileDialog {
         title: Tr.tr("Select a profile picture")
-        filterLabel: Tr.tr("Image files")
-        filters: Images.validImageExtensions
-        onAccepted: path => {
-            if (CUtils.copyFile(Qt.resolvedUrl(path), Qt.resolvedUrl(`${Paths.home}/.face`)))
+        currentFolder: Qt.resolvedUrl(Paths.home)
+        nameFilters: [Tr.tr("Image files") + ` (${Images.validImageExtensions.map(extension => "*." + extension).join(" ")})`]
+        onAccepted: {
+            const path = Paths.toLocalFile(selectedFile);
+            if (CUtils.copyFile(selectedFile, Qt.resolvedUrl(`${Paths.home}/.face`)))
                 // TRANSLATORS: %1 = a file path
                 Quickshell.execDetached(["notify-send", "-a", "caelestia-shell", "-u", "low", "-h", `STRING:image-path:${path}`, Tr.tr("Profile picture changed"), Tr.tr("Profile picture changed to %1").arg(Paths.shortenHome(path))]);
             else

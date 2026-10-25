@@ -18,15 +18,15 @@ Item {
 
     readonly property alias count: bar.count
 
-    implicitHeight: bar.implicitHeight + bar.anchors.topMargin + indicator.implicitHeight + indicator.anchors.topMargin + separator.implicitHeight
+    implicitHeight: bar.implicitHeight + bar.anchors.bottomMargin + indicator.implicitHeight + indicator.anchors.bottomMargin + separator.implicitHeight
 
     TabBar {
         id: bar
 
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.topMargin: Tokens.sizes.dashboard.tabIndicatorSpacing
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: Tokens.sizes.dashboard.tabIndicatorSpacing
 
         currentIndex: root.screenState.dashboardTab
         onCurrentIndexChanged: root.screenState.dashboardTab = currentIndex
@@ -58,8 +58,8 @@ Item {
     Item {
         id: indicator
 
-        anchors.top: bar.bottom
-        anchors.topMargin: 5
+        anchors.bottom: bar.top
+        anchors.bottomMargin: 5
 
         implicitWidth: {
             const tab = bar.currentItem;
@@ -80,7 +80,7 @@ Item {
         clip: true
 
         StyledRect {
-            anchors.top: parent.top
+            anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             implicitHeight: parent.implicitHeight * 2
@@ -101,7 +101,7 @@ Item {
     StyledRect {
         id: separator
 
-        anchors.top: indicator.bottom
+        anchors.bottom: indicator.top
         anchors.left: parent.left
         anchors.right: parent.right
 

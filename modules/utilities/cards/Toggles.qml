@@ -10,7 +10,6 @@ import Caelestia.State
 import qs.components
 import qs.components.controls
 import qs.services
-import qs.modules.nexus
 import qs.modules.bar.popouts as BarPopouts
 
 StyledRect {
@@ -28,8 +27,8 @@ StyledRect {
 
             // TODO: hide wallpaper playing toggle if wallpaper is live
 
-            if (item.id === "vpn")
-                return GlobalConfig.utilities.vpn.selectedProvider.length > 0;
+            if (item.id === "vpn" && GlobalConfig.utilities.vpn.selectedProvider.length === 0)
+                return false;
 
             seenIds.add(item.id);
             return true;
@@ -116,17 +115,10 @@ StyledRect {
                         inactiveOnColour: Colours.palette.m3onSurfaceVariant
                         isToggle: false
                         onClicked: {
+                            root.screenState.sidebar = false;
                             root.screenState.utilities = false;
-                            WindowFactory.create();
+                            root.popouts.detach("appearance");
                         }
-                    }
-                }
-                DelegateChoice {
-                    roleValue: "gameMode"
-                    delegate: Toggle {
-                        icon: "gamepad"
-                        checked: RuntimeState.gameMode
-                        onClicked: RuntimeState.gameMode = !RuntimeState.gameMode
                     }
                 }
                 DelegateChoice {
@@ -148,12 +140,22 @@ StyledRect {
                 DelegateChoice {
                     roleValue: "vpn"
                     delegate: Toggle {
+                        id: vpnToggle
+
                         icon: "vpn_key"
                         checked: VPN.connected && VPN.status.state !== "needs-auth" && VPN.status.state !== "error"
                         enabled: !VPN.connecting && !VPN.disconnecting
                         isToggle: VPN.status.state !== "needs-auth" && VPN.status.state !== "error"
                         inactiveOnColour: Colours.palette.m3onSurfaceVariant
                         onClicked: VPN.toggle()
+
+                        Timer {
+                            interval: 5000
+                            running: vpnToggle.visible
+                            repeat: true
+                            triggeredOnStart: true
+                            onTriggered: VPN.checkStatus()
+                        }
                     }
                 }
             }

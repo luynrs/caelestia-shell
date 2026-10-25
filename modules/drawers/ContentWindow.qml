@@ -92,9 +92,9 @@ StyledWindow {
         height: panels.notifications.height
 
         Region {
-            x: root.width - width
+            x: 0
             y: panels.osdWrapper.y + bar.implicitHeight
-            width: panels.osdWrapper.width * (1 - panels.osd.offsetScale) + root.borderThickness
+            width: panels.osdWrapper.width + root.borderThickness
             height: panels.osd.height
         }
     }

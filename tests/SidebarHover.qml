@@ -39,12 +39,12 @@ ShellRoot {
         return null;
     }
 
-    function findToggle(parent: Item): Controls.IconButton {
+    function findToggle(parent: Item, icon: string): Controls.IconButton {
         const button = parent as Controls.IconButton;
-        if (button?.icon === "notifications_off")
+        if (button?.icon === icon)
             return button;
         for (const child of parent.children) {
-            const found = findToggle(child);
+            const found = findToggle(child, icon);
             if (found)
                 return found;
         }
@@ -151,7 +151,7 @@ ShellRoot {
                 const keepAwake = root.findItem(panels, "utilitiesKeepAwake");
                 const recorder = root.findItem(panels, "utilitiesScreenRecorder");
                 root.check(toggles !== null && notifications !== null && keepAwake !== null && recorder !== null, "All sidebar sections must load");
-                const toggle = root.findToggle(panels.utilities);
+                const toggle = root.findToggle(panels.utilities, "notifications_off");
                 root.check(toggle !== null, "The quick-toggle click target must be loaded");
                 if (toggle) {
                     const point = toggle.mapToItem(window.contentItem, toggle.width / 2, toggle.height / 2);
@@ -197,7 +197,7 @@ ShellRoot {
                 state.osd = true;
                 break;
             case 7:
-                root.check(panels.notifications.y >= panels.osdWrapper.y + panels.osdWrapper.height - 1, "Popups must stay below the visible OSD");
+                root.check(panels.osdWrapper.x < 1 && panels.osdWrapper.x + panels.osdWrapper.width <= panels.notifications.x && panels.notifications.y < panels.osdWrapper.y + panels.osdWrapper.height - 1, "Left-edge OSD must not reduce right-edge popup space");
                 root.check(panels.notifications.y + panels.notifications.height <= panels.height + 6, "OSD must not push popups past the bottom edge");
                 state.osd = false;
                 state.session = true;
@@ -226,6 +226,23 @@ ShellRoot {
                 break;
             case 12:
                 root.check(root.fullscreenSamples > 0, "Popup position checks must cover fullscreen transitions");
+                GlobalConfig.sidebar.enabled = true;
+                state.sidebar = true;
+                break;
+            case 13:
+                const settings = root.findToggle(panels.utilities, "settings");
+                root.check(settings !== null, "The settings shortcut must be loaded");
+                if (settings)
+                    root.check(events.mouseClick(settings.stateLayer, settings.width / 2, settings.height / 2, Qt.LeftButton, Qt.NoModifier, 0), "The settings shortcut must accept a click");
+                break;
+            case 14:
+                root.check(!state.sidebar && !state.utilities, "Opening settings must dismiss the utility panel");
+                root.check(panels.popouts.isDetached && panels.popouts.queuedMode === "appearance", "Settings must open in the shell popup on the appearance page");
+                root.check(panels.popouts.nexus.item !== null, "The settings popup must load its content");
+                panels.popouts.close();
+                break;
+            case 15:
+                root.check(!panels.popouts.isDetached && !state.sidebar, "Closing settings must leave both popup and sidebar dismissed");
                 console.log("Sidebar hover failures:", root.failures);
                 Qt.exit(root.failures === 0 ? 0 : 1);
             }

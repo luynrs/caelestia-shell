@@ -1,13 +1,13 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import Quickshell
 import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
-import qs.components.filedialog
 
 Item {
     id: root
@@ -46,7 +46,7 @@ Item {
     }
 
     readonly property real nonAnimWidth: view.implicitWidth + viewWrapper.anchors.margins * 2
-    readonly property real nonAnimHeight: tabs.implicitHeight + tabs.anchors.topMargin + view.implicitHeight + viewWrapper.anchors.margins * 2
+    readonly property real nonAnimHeight: tabs.implicitHeight + tabs.anchors.bottomMargin + view.implicitHeight + viewWrapper.anchors.margins * 2
 
     implicitWidth: nonAnimWidth
     implicitHeight: nonAnimHeight
@@ -54,10 +54,10 @@ Item {
     Tabs {
         id: tabs
 
-        anchors.top: parent.top
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.topMargin: CUtils.clamp(anchors.margins - Config.border.thickness, 0, anchors.margins)
+        anchors.bottomMargin: CUtils.clamp(anchors.margins - Config.border.thickness, 0, anchors.margins)
         anchors.margins: Tokens.padding.large
 
         nonAnimWidth: root.nonAnimWidth - anchors.margins * 2
@@ -68,10 +68,10 @@ Item {
     ClipRect {
         id: viewWrapper
 
-        anchors.top: tabs.bottom
+        anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.bottom: tabs.top
         anchors.margins: Tokens.padding.large
 
         radius: Tokens.rounding.large
@@ -141,13 +141,21 @@ Item {
 
                         sourceComponent: modelData.component
 
-                        Component.onCompleted: active = Qt.binding(() => {
-                            if (index === view.currentIndex)
-                                return true;
-                            const vx = Math.floor(view.visibleArea.xPosition * view.contentWidth);
-                            const vex = Math.floor(vx + view.visibleArea.widthRatio * view.contentWidth);
-                            return (vx >= x && vx <= x + implicitWidth) || (vex >= x && vex <= x + implicitWidth);
-                        })
+                        onLoaded: Layout.preferredWidth = item.implicitWidth
+
+                        Binding on active {
+                            delayed: true
+                            value: paneLoader.index === view.currentIndex || (paneLoader.x < view.contentX + view.width && paneLoader.x + paneLoader.Layout.preferredWidth > view.contentX)
+                        }
+
+                        Connections {
+                            function onImplicitWidthChanged(): void {
+                                if (paneLoader.active)
+                                    paneLoader.Layout.preferredWidth = paneLoader.item.implicitWidth;
+                            }
+
+                            target: paneLoader.item
+                        }
                     }
                 }
             }

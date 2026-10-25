@@ -19,7 +19,8 @@ Item {
         spacing: Tokens.spacing.medium
 
         StyledRect {
-            Layout.bottomMargin: Tokens.padding.large - layout.spacing
+            Layout.topMargin: Math.min(Tokens.padding.large, Config.border.thickness) / 2
+            Layout.bottomMargin: Tokens.padding.large - layout.spacing - Layout.topMargin
             Layout.fillWidth: true
             implicitHeight: 1
 

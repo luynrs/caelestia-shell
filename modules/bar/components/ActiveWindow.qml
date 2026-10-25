@@ -26,13 +26,15 @@ Item {
     }
 
     readonly property int maxWidth: {
-        let otherWidth = 0;
+        const center = bar.width / 2;
+        let available = center - bar.hPadding;
         for (const entry of bar.children) {
-            if (entry.entryId && entry.item !== root && entry.entryId !== "spacer")
-                otherWidth += entry.item.nonAnimWidth ?? entry.width;
+            if (!entry.entryId || entry.entryId === "spacer")
+                continue;
+            const distance = entry.x >= center ? entry.x - center : center - entry.x - entry.width;
+            available = Math.min(available, distance - bar.spacing);
         }
-        // Length - 2 cause repeater counts as a child
-        return Math.max(0, bar.width - otherWidth - bar.spacing * (bar.children.length - 1) - bar.hPadding * 2);
+        return Math.max(0, available * 2);
     }
 
     clip: true
@@ -82,7 +84,7 @@ Item {
         text: metrics.text
         font: metrics.font
         color: root.colour
-        horizontalAlignment: Text.AlignLeft
+        horizontalAlignment: Text.AlignHCenter
 
         width: root.width
         elide: Text.ElideRight

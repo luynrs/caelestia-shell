@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import QtQuick.Dialogs
 import QtQuick.Layouts
 import Quickshell
 import Caelestia.Components
@@ -9,7 +10,6 @@ import Caelestia.I18n
 import Caelestia.Models
 import qs.components
 import qs.components.controls
-import qs.components.filedialog
 import qs.services
 import qs.utils
 import qs.modules.nexus.common
@@ -39,16 +39,21 @@ PageBase {
                 shapeMorph: true
                 horizontalPadding: Tokens.padding.extraLarge
                 verticalPadding: Tokens.padding.medium
-                onClicked: browseDialog.open()
+                onClicked: {
+                    root.nState.fileDialogOpen = true;
+                    browseDialog.open();
+                    root.nState.fileDialogOpen = browseDialog.visible;
+                }
 
                 FileDialog {
                     id: browseDialog
 
                     title: Tr.tr("Select an image")
-                    filterLabel: Tr.tr("Image files")
-                    filters: Images.validImageExtensions
-                    onAccepted: path => {
-                        Wallpapers.setWallpaper(path);
+                    currentFolder: Qt.resolvedUrl(Paths.home)
+                    nameFilters: [Tr.tr("Image files") + ` (${Images.validImageExtensions.map(extension => "*." + extension).join(" ")})`]
+                    onVisibleChanged: root.nState.fileDialogOpen = visible
+                    onAccepted: {
+                        Wallpapers.setWallpaper(Paths.toLocalFile(selectedFile));
                         root.nState.closeSubPage();
                     }
                 }

@@ -10,7 +10,7 @@ import qs.components
 import qs.services
 import qs.modules.bar.popouts as BarPopouts
 
-RowLayout {
+Item {
     id: root
 
     required property ShellScreen screen
@@ -18,6 +18,7 @@ RowLayout {
     required property BarPopouts.Wrapper popouts
     required property bool fullscreen
     readonly property int hPadding: Tokens.padding.large
+    readonly property int spacing: Tokens.spacing.medium
 
     function closeTray(): void {
         if (!Config.bar.tray.compact)
@@ -31,7 +32,7 @@ RowLayout {
     }
 
     function checkPopout(x: real): void {
-        const ch = childAt(x, height / 2) as EntryWrapper;
+        const ch = entryAt(x);
 
         if (ch?.entryId !== "tray")
             closeTray();
@@ -77,7 +78,7 @@ RowLayout {
     }
 
     function handleWheel(x: real, angleDelta: point): void {
-        const ch = childAt(x, height / 2) as EntryWrapper;
+        const ch = entryAt(x);
         if (ch?.entryId === "workspaces" && Config.bar.scrollActions.workspaces) {
             // Workspace scroll
             const mon = Hypr.monitorFor(screen);
@@ -99,84 +100,106 @@ RowLayout {
         }
     }
 
-    spacing: Tokens.spacing.medium
+    function entryAt(x: real): Item {
+        if (activeWindow.item && activeWindow.contains(mapToItem(activeWindow, x, height / 2)))
+            return activeWindow;
+        return layout.childAt(x, height / 2) as EntryWrapper;
+    }
 
-    Repeater {
-        id: repeater
+    implicitWidth: layout.implicitWidth
+    implicitHeight: layout.implicitHeight
 
-        model: ScriptModel {
-            values: root.Config.bar.entries.values.filter(e => e.enabled)
+    RowLayout {
+        id: layout
+
+        readonly property int hPadding: root.hPadding
+        readonly property BarPopouts.Wrapper popouts: root.popouts
+
+        anchors.fill: parent
+        spacing: root.spacing
+
+        Repeater {
+            id: repeater
+
+            model: ScriptModel {
+                values: root.Config.bar.entries.values.filter(e => e.enabled && e.id !== "activeWindow")
+            }
+
+            DelegateChooser {
+                role: "id"
+
+                DelegateChoice {
+                    roleValue: "spacer"
+                    delegate: EntryWrapper {
+                        Layout.fillWidth: true
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "logo"
+                    delegate: EntryWrapper {
+                        OsIcon {
+                            objectName: "taskbarLogo"
+                        }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "workspaces"
+                    delegate: EntryWrapper {
+                        Workspaces {
+                            objectName: "taskbarWorkspaces"
+                            screen: root.screen
+                            fullscreen: root.fullscreen
+                        }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "tray"
+                    delegate: EntryWrapper {
+                        Tray {
+                            objectName: "taskbarTray"
+                        }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "clock"
+                    delegate: EntryWrapper {
+                        Clock {
+                            objectName: "taskbarClock"
+                        }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "statusIcons"
+                    delegate: EntryWrapper {
+                        StatusIcons {
+                            objectName: "taskbarStatusIcons"
+                        }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "power"
+                    delegate: EntryWrapper {
+                        Power {
+                            objectName: "taskbarPowerButton"
+                            screenState: root.screenState
+                        }
+                    }
+                }
+            }
         }
+    }
 
-        DelegateChooser {
-            role: "id"
+    Loader {
+        id: activeWindow
 
-            DelegateChoice {
-                roleValue: "spacer"
-                delegate: EntryWrapper {
-                    Layout.fillWidth: true
-                }
-            }
-            DelegateChoice {
-                roleValue: "logo"
-                delegate: EntryWrapper {
-                    OsIcon {
-                        objectName: "taskbarLogo"
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "workspaces"
-                delegate: EntryWrapper {
-                    Workspaces {
-                        objectName: "taskbarWorkspaces"
-                        screen: root.screen
-                        fullscreen: root.fullscreen
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "activeWindow"
-                delegate: EntryWrapper {
-                    ActiveWindow {
-                        objectName: "taskbarActiveWindow"
-                        bar: root
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "tray"
-                delegate: EntryWrapper {
-                    Tray {
-                        objectName: "taskbarTray"
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "clock"
-                delegate: EntryWrapper {
-                    Clock {
-                        objectName: "taskbarClock"
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "statusIcons"
-                delegate: EntryWrapper {
-                    StatusIcons {
-                        objectName: "taskbarStatusIcons"
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "power"
-                delegate: EntryWrapper {
-                    Power {
-                        objectName: "taskbarPowerButton"
-                        screenState: root.screenState
-                    }
-                }
-            }
+        readonly property string entryId: "activeWindow"
+
+        anchors.centerIn: parent
+        active: root.Config.bar.entries.values.some(entry => entry.enabled && entry.id === "activeWindow")
+
+        sourceComponent: ActiveWindow {
+            objectName: "taskbarActiveWindow"
+            bar: layout
         }
     }
 
