@@ -6,6 +6,10 @@ Singleton {
     property var pendingRequests: []
 
     function get(url: string, success: var, failure: var, headers: var): void {
-        pendingRequests.push({url, success, failure});
+        pendingRequests.push({
+            url,
+            success,
+            failure
+        });
     }
 }

@@ -224,7 +224,6 @@ Item {
                         text: Icons.getAppCategoryIcon(modelData.lastIpcObject.class, "terminal")
                         color: root.onOtherMonitor ? root.offMonitorColour : Colours.palette.m3onSurfaceVariant
 
-
                         Behavior on opacity {
                             Anim {
                                 type: Anim.DefaultEffects

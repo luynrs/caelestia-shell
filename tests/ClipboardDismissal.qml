@@ -5,6 +5,7 @@ import qs.modules.launcher as Launcher
 
 ShellRoot {
     id: root
+
     property int failures: 0
 
     function check(condition: bool, message: string): void {
@@ -27,6 +28,7 @@ ShellRoot {
 
     ScreenState {
         id: state
+
         modelData: Quickshell.screens[0]
         launcherQuery: ">clipboard beta"
         launcher: true
@@ -34,10 +36,13 @@ ShellRoot {
 
     Item {
         id: stage
+
         width: 1280
         height: 720
+
         Launcher.Wrapper {
             id: launcher
+
             screen: Quickshell.screens[0]
             screenState: state
             panels: stage
@@ -68,6 +73,7 @@ ShellRoot {
 
     Timer {
         id: dismissTimer
+
         interval: 40
         onTriggered: {
             state.launcher = false;
@@ -79,6 +85,7 @@ ShellRoot {
 
     Timer {
         id: reopenedTimer
+
         interval: 450
         onTriggered: {
             root.check(state.launcher && state.launcherQuery === ">clipboard alpha", "A completed old copy must not close newly opened clipboard history");

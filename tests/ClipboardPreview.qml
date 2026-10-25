@@ -4,6 +4,7 @@ import qs.modules.launcher.items
 
 ShellRoot {
     id: root
+
     property int failures: 0
 
     function check(condition: bool, message: string): void {
@@ -30,8 +31,15 @@ ShellRoot {
 
         ClipboardItem {
             id: card
+
             width: parent.width
-            modelData: ({id: "201", preview: "[[ binary data 71 B png 2x1 ]]", isImage: true, imageFormat: "png", dimensions: "2x1"})
+            modelData: ({
+                    id: "201",
+                    preview: "[[ binary data 71 B png 2x1 ]]",
+                    isImage: true,
+                    imageFormat: "png",
+                    dimensions: "2x1"
+                })
         }
     }
 

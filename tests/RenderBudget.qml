@@ -5,6 +5,7 @@ import qs.modules.background as Background
 
 ShellRoot {
     id: root
+
     property int failures: 0
 
     function check(condition: bool, message: string): void {
@@ -16,6 +17,7 @@ ShellRoot {
 
     PanelWindow {
         id: window
+
         visible: false
         implicitWidth: 1280
         implicitHeight: 720
@@ -26,12 +28,14 @@ ShellRoot {
 
         Controls.Menu {
             id: menu
+
             parent: window.contentItem
             attachTo: anchor
         }
 
         Background.Visualiser {
             id: visualiser
+
             screen: Quickshell.screens[0]
             wallpaper: anchor
             opacity: 0
@@ -51,6 +55,7 @@ ShellRoot {
 
     Timer {
         id: fadingTimer
+
         interval: 50
         onTriggered: {
             root.check(menu.opacity > 0 && menu.opacity < 1, "Dropdown fade must be sampled");
@@ -63,6 +68,7 @@ ShellRoot {
 
     Timer {
         id: settledTimer
+
         interval: 700
         onTriggered: {
             root.check(!menu.children[0].layer.enabled, "Opaque dropdown must release its transition layer");
@@ -73,6 +79,7 @@ ShellRoot {
 
     Timer {
         id: closedTimer
+
         interval: 700
         onTriggered: {
             root.check(menu.opacity === 0 && !menu.layer.enabled && !menu.children[0].layer.enabled, "Closed dropdown must release all transition layers");

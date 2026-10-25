@@ -7,6 +7,7 @@ import qs.modules.launcher.services as LauncherServices
 
 ShellRoot {
     id: root
+
     property int failures: 0
     property var search
     property var historyList
@@ -31,12 +32,14 @@ ShellRoot {
 
     ScreenState {
         id: state
+
         modelData: Quickshell.screens[0]
         launcher: true
     }
 
     PanelWindow {
         id: window
+
         implicitWidth: 1280
         implicitHeight: 720
         color: "transparent"
@@ -47,12 +50,14 @@ ShellRoot {
 
     Item {
         id: stage
+
         parent: window.contentItem
         width: 1280
         height: 720
 
         Launcher.Wrapper {
             id: launcher
+
             screen: Quickshell.screens[0]
             screenState: state
             panels: stage
@@ -75,6 +80,7 @@ ShellRoot {
 
     Timer {
         id: clipboardTimer
+
         interval: 700
         onTriggered: {
             const list = root.findItem(launcher, "launcherClipboardList");
@@ -92,6 +98,7 @@ ShellRoot {
 
     Timer {
         id: filteredTimer
+
         interval: 300
         onTriggered: {
             const list = root.findItem(launcher, "launcherClipboardList");
@@ -109,6 +116,7 @@ ShellRoot {
 
     Timer {
         id: closingTimer
+
         interval: 16
         repeat: true
         onTriggered: {
@@ -123,14 +131,16 @@ ShellRoot {
     }
 
     Connections {
-        target: Clipboard
         function onCopied(): void {
             closingTimer.start();
         }
+
+        target: Clipboard
     }
 
     Timer {
         id: copiedTimer
+
         interval: 650
         onTriggered: {
             root.check(!state.launcher, "Copying from history must close the launcher after success");
@@ -143,6 +153,7 @@ ShellRoot {
 
     Timer {
         id: reopenedTimer
+
         interval: 700
         onTriggered: {
             const list = root.findItem(launcher, "launcherClipboardList");

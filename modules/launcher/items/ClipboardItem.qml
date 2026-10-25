@@ -12,7 +12,8 @@ Item {
     id: root
 
     required property var modelData
-    signal copyRequested()
+
+    signal copyRequested
 
     implicitHeight: Tokens.sizes.launcher.itemHeight
 
@@ -43,11 +44,13 @@ Item {
 
         Loader {
             id: thumbnail
+
             anchors.fill: parent
             active: root.modelData.isImage
 
             sourceComponent: Image {
                 id: image
+
                 readonly property string previewFile: `${Clipboard.previewDirectory}/${root.modelData.id}.${root.modelData.imageFormat}`
 
                 asynchronous: true
@@ -95,6 +98,7 @@ Item {
 
     IconButton {
         id: removeButton
+
         anchors.right: parent.right
         anchors.rightMargin: Tokens.padding.medium
         anchors.verticalCenter: parent.verticalCenter

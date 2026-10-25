@@ -261,7 +261,6 @@ Item {
             font: Tokens.font.body.medium
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-
             MouseArea {
                 id: mouse
 

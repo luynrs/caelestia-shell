@@ -5,6 +5,7 @@ import qs.modules.launcher as Launcher
 
 ShellRoot {
     id: root
+
     property int failures: 0
 
     function check(condition: bool, message: string): void {
@@ -16,6 +17,7 @@ ShellRoot {
 
     ScreenState {
         id: state
+
         modelData: Quickshell.screens[0]
         launcherQuery: ">clipboard "
         launcher: true
@@ -23,10 +25,13 @@ ShellRoot {
 
     Item {
         id: stage
+
         width: 1280
         height: 300
+
         Launcher.Wrapper {
             id: launcher
+
             screen: Quickshell.screens[0]
             screenState: state
             panels: stage

@@ -18,17 +18,18 @@ ShellRoot {
     }
 
     Connections {
-        target: typeof Clipboard === "undefined" ? null : Clipboard
-
         function onCopied(): void {
             root.copies++;
         }
+
+        target: typeof Clipboard === "undefined" ? null : Clipboard
     }
 
     Process {
         id: cacheCheck
 
-        onExited: code => root.check(code === 0, "Preview cache check failed: " + command[1]) // qmllint disable signal-handler-parameters
+        onExited: code => root.check(code === 0, "Preview cache check failed: " + command[1])
+        // qmllint disable signal-handler-parameters
     }
 
     Timer {
@@ -65,9 +66,13 @@ ShellRoot {
                 root.check(Clipboard.previewDirectory === Quickshell.env("XDG_RUNTIME_DIR") + "/caelestia-clipboard", "Previews must use the isolated runtime directory");
                 cacheCheck.exec(["clipboard-cache-check", "initial"]);
                 for (const invalidId of ["", "-1", "1;touch injected", "$(touch injected)", "1\n2", " 1", 12]) {
-                    Clipboard.copy({ id: invalidId });
+                    Clipboard.copy({
+                        id: invalidId
+                    });
                     root.check(!Clipboard.busy && Clipboard.error.length > 0, "Invalid IDs must not start copy commands");
-                    Clipboard.remove({ id: invalidId });
+                    Clipboard.remove({
+                        id: invalidId
+                    });
                     root.check(!Clipboard.busy && Clipboard.error.length > 0, "Invalid IDs must not start delete commands");
                 }
                 Clipboard.copy(Clipboard.entries[1]);
@@ -82,15 +87,23 @@ ShellRoot {
                 break;
             case 3:
                 root.check(root.copies === 2 && !Clipboard.error, "Successful image copy must emit copied once");
-                Clipboard.copy({ id: "404", preview: "unused" });
+                Clipboard.copy({
+                    id: "404",
+                    preview: "unused"
+                });
                 break;
             case 4:
                 root.check(root.copies === 2 && Clipboard.error.length > 0, "Decode failure must surface an error without emitting copied");
-                Clipboard.copy({ id: "13", preview: "unused" });
+                Clipboard.copy({
+                    id: "13",
+                    preview: "unused"
+                });
                 break;
             case 5:
                 root.check(root.copies === 2 && Clipboard.error.length > 0, "wl-copy failure must surface an error without emitting copied");
-                Clipboard.remove({ id: "405" });
+                Clipboard.remove({
+                    id: "405"
+                });
                 break;
             case 6:
                 root.check(Clipboard.error.length > 0 && Clipboard.entries.length === 8, "Failed delete must retain the current history");

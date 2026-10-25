@@ -1,11 +1,12 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Caelestia.Models
 import Caelestia.Images
+import Caelestia.Models
 
 ShellRoot {
     id: root
+
     readonly property string directory: Quickshell.env("CAELESTIA_TEST_DIRECTORY")
     property int failures: 0
 
@@ -18,6 +19,7 @@ ShellRoot {
 
     FileSystemModel {
         id: files
+
         path: `${root.directory}/walls`
         recursive: true
         watchChanges: true
@@ -27,6 +29,7 @@ ShellRoot {
 
     FileView {
         id: addedFile
+
         path: `${root.directory}/walls/a/added.txt`
         printErrors: false
     }
@@ -37,6 +40,7 @@ ShellRoot {
 
     Component {
         id: transientAnalyser
+
         ImageAnalyser {}
     }
 
@@ -49,7 +53,9 @@ ShellRoot {
             changedTimer.start();
 
             for (let index = 0; index < 128; index++) {
-                const analyser = transientAnalyser.createObject(root, {source: `${root.directory}/red.ppm`});
+                const analyser = transientAnalyser.createObject(root, {
+                    source: `${root.directory}/red.ppm`
+                });
                 analyser.requestUpdate();
                 analyser.destroy();
                 latestImage.source = `${root.directory}/${index % 2 === 0 ? "red" : "blue"}.ppm`;
@@ -60,6 +66,7 @@ ShellRoot {
 
     Timer {
         id: changedTimer
+
         interval: 700
         onTriggered: {
             root.check(files.entries.length === 4, "Changing one subdirectory must preserve all other entries");
@@ -73,6 +80,7 @@ ShellRoot {
 
     Timer {
         id: clearedTimer
+
         interval: 700
         onTriggered: {
             root.check(files.entries.length === 0, "Clearing the path must cancel pending scans");
@@ -85,6 +93,7 @@ ShellRoot {
 
     Timer {
         id: replacedTimer
+
         interval: 700
         onTriggered: {
             root.check(files.entries.length === 4, "Rapid scan replacement must retain only the final directory entries");

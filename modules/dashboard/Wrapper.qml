@@ -36,10 +36,19 @@ Item {
     implicitWidth: content.implicitWidth || 854 // Hard coded fallback for first open
     opacity: 1 - offsetScale
 
+    transitions: Transition {
+        to: "open,closed"
+
+        Anim {
+            property: "offsetScale"
+        }
+    }
+
     states: [
         State {
             name: "open"
             when: root.shouldBeActive && !root.screenState.launcher
+
             PropertyChanges {
                 root.offsetScale: 0
             }
@@ -49,13 +58,6 @@ Item {
             when: !root.shouldBeActive && !root.screenState.launcher
         }
     ]
-
-    transitions: Transition {
-        to: "open,closed"
-        Anim {
-            property: "offsetScale"
-        }
-    }
 
     Loader {
         id: content

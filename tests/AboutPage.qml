@@ -9,6 +9,7 @@ ShellRoot {
 
         AboutPage {
             id: about
+
             anchors.fill: parent
         }
     }

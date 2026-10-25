@@ -1,11 +1,11 @@
 import QtQuick
 import Quickshell
 import qs.components
+import qs.services
 import qs.modules.bar as Bar
+import qs.modules.drawers as Drawers
 import qs.modules.bar.components as Widgets
 import qs.modules.bar.popouts as Popouts
-import qs.modules.drawers as Drawers
-import qs.services
 
 ShellRoot {
     id: root
@@ -33,12 +33,14 @@ ShellRoot {
 
     ScreenState {
         id: state
+
         modelData: Quickshell.screens[0]
         bar: true
     }
 
     Drawers.ContentWindow {
         id: window
+
         visible: false
         screen: Quickshell.screens[0]
         implicitWidth: 1280
@@ -47,11 +49,13 @@ ShellRoot {
 
     Item {
         id: stage
+
         width: 1280
         height: 720
 
         Bar.BarWrapper {
             id: bar
+
             width: parent.width
             anchors.top: parent.top
             screen: Quickshell.screens[0]
@@ -62,6 +66,7 @@ ShellRoot {
 
         Popouts.ClipWrapper {
             id: popout
+
             screen: Quickshell.screens[0]
             borderThickness: 10
         }
@@ -116,6 +121,7 @@ ShellRoot {
 
     Timer {
         id: popoutOpeningTimer
+
         interval: 16
         repeat: true
         onTriggered: {
@@ -130,6 +136,7 @@ ShellRoot {
 
     Timer {
         id: popupTimer
+
         interval: 1000
         onTriggered: {
             popoutOpeningTimer.stop();
@@ -144,6 +151,7 @@ ShellRoot {
 
     Timer {
         id: rightTimer
+
         interval: 1000
         onTriggered: {
             root.check(popout.x >= 0 && popout.x < 1, "Left-edge popout must stay on screen");
@@ -158,6 +166,7 @@ ShellRoot {
 
     Timer {
         id: launcherTimer
+
         interval: 1000
         onTriggered: {
             const panels = window.interactionWrapper.panels;
@@ -171,6 +180,7 @@ ShellRoot {
 
     Timer {
         id: launcherClosingTimer
+
         interval: 50
         onTriggered: {
             const launcher = window.interactionWrapper.panels.launcher;
@@ -182,6 +192,7 @@ ShellRoot {
 
     Timer {
         id: launcherClosedTimer
+
         interval: 1000
         onTriggered: {
             root.check(!window.interactionWrapper.panels.launcher.visible, "Launcher must disappear after its closing animation");
@@ -192,6 +203,7 @@ ShellRoot {
 
     Timer {
         id: launcherSwitchTimer
+
         interval: 1000
         onTriggered: {
             const panels = window.interactionWrapper.panels;
@@ -204,6 +216,7 @@ ShellRoot {
 
     Timer {
         id: dashboardTimer
+
         interval: 1000
         onTriggered: {
             const panels = window.interactionWrapper.panels;
@@ -216,6 +229,7 @@ ShellRoot {
 
     Timer {
         id: dashboardClosingTimer
+
         interval: 50
         onTriggered: {
             const dashboard = window.interactionWrapper.panels.dashboard;
@@ -236,6 +250,7 @@ ShellRoot {
 
     Timer {
         id: closingTimer
+
         interval: 50
         onTriggered: {
             window.screenState.launcher = true;
@@ -246,6 +261,7 @@ ShellRoot {
 
     Timer {
         id: launcherBeforeInterruptTimer
+
         interval: 1000
         onTriggered: {
             window.screenState.launcher = false;
@@ -255,6 +271,7 @@ ShellRoot {
 
     Timer {
         id: switchingTimer
+
         interval: 50
         onTriggered: {
             const launcher = window.interactionWrapper.panels.launcher;
@@ -270,6 +287,7 @@ ShellRoot {
 
     Timer {
         id: hiddenTimer
+
         interval: 1000
         onTriggered: {
             root.check(popout.height === 0, "Closed attached popout must collapse vertically");

@@ -34,10 +34,19 @@ Item {
 
     Component.onCompleted: Qt.callLater(() => Apps) // Load apps on init
 
+    transitions: Transition {
+        to: "open,closed"
+
+        Anim {
+            property: "offsetScale"
+        }
+    }
+
     states: [
         State {
             name: "open"
             when: root.shouldBeActive && !root.screenState.dashboard
+
             PropertyChanges {
                 root.offsetScale: 0
             }
@@ -47,13 +56,6 @@ Item {
             when: !root.shouldBeActive && !root.screenState.dashboard
         }
     ]
-
-    transitions: Transition {
-        to: "open,closed"
-        Anim {
-            property: "offsetScale"
-        }
-    }
 
     Loader {
         id: content

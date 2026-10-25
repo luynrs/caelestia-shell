@@ -21,12 +21,13 @@ Searcher {
 
     Action {
         id: clipboardAction
+
         modelData: ({
-            name: Tr.tr("Clipboard history"),
-            description: Tr.tr("Search copied text and images"),
-            icon: "content_paste",
-            command: ["autocomplete", "clipboard"]
-        })
+                name: Tr.tr("Clipboard history"),
+                description: Tr.tr("Search copied text and images"),
+                icon: "content_paste",
+                command: ["autocomplete", "clipboard"]
+            })
     }
 
     Variants {

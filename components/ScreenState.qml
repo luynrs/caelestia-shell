@@ -13,6 +13,10 @@ PersistentProperties {
     property bool sidebar
     property string launcherQuery
 
+    // Dashboard state
+    property int dashboardTab
+    property date dashboardDate: new Date()
+
     onLauncherChanged: {
         if (launcher)
             dashboard = false;
@@ -24,8 +28,4 @@ PersistentProperties {
         if (dashboard)
             launcher = false;
     }
-
-    // Dashboard state
-    property int dashboardTab
-    property date dashboardDate: new Date()
 }

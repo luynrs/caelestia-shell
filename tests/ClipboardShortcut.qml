@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
 import Caelestia.Config
-import qs.daemons as Daemons
 import qs.services
+import qs.daemons as Daemons
 
 ShellRoot {
     id: root

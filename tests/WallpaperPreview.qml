@@ -16,11 +16,12 @@ ShellRoot {
     }
 
     Connections {
-        target: Colours
         function onShowPreviewChanged(): void {
             if (Colours.showPreview && Wallpapers.previewPath === root.directory + "second")
                 root.check(Colours.preview.m3primary.toString() === "#0000ff", "An obsolete wallpaper response must not flash its palette");
         }
+
+        target: Colours
     }
 
     Timer {
@@ -35,6 +36,7 @@ ShellRoot {
 
     Timer {
         id: replacement
+
         interval: 40
         onTriggered: {
             Wallpapers.preview(root.directory + "second");
@@ -44,6 +46,7 @@ ShellRoot {
 
     Timer {
         id: latest
+
         interval: 500
         onTriggered: {
             root.check(Colours.showPreview && Colours.preview.m3primary.toString() === "#0000ff", "Only the latest wallpaper may supply preview colours");
@@ -55,6 +58,7 @@ ShellRoot {
 
     Timer {
         id: dismissal
+
         interval: 40
         onTriggered: {
             Wallpapers.stopPreview();
@@ -64,6 +68,7 @@ ShellRoot {
 
     Timer {
         id: closed
+
         interval: 350
         onTriggered: {
             root.check(!Colours.showPreview && !Wallpapers.showPreview, "A pending preview must not restore colours after dismissal");
@@ -74,6 +79,7 @@ ShellRoot {
 
     Timer {
         id: failed
+
         interval: 300
         onTriggered: {
             root.check(!Colours.showPreview, "A failed preview must not activate a stale palette");

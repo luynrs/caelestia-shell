@@ -73,19 +73,21 @@ StyledListView {
     }
 
     Connections {
-        target: root.search
         function onTextChanged(): void {
             root.syncDisplayText();
         }
+
+        target: root.search
     }
 
     Connections {
-        target: root.screenState
         function onLauncherChanged(): void {
             root.syncDisplayText();
             if (root.screenState.launcher)
                 Clipboard.refresh();
         }
+
+        target: root.screenState
     }
 
     Connections {

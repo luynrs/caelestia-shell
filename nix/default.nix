@@ -37,6 +37,14 @@
 }: let
   version = "1.0.0";
 
+  cli = caelestia-cli.overrideAttrs (old: {
+    patchPhase = old.patchPhase + ''
+      substituteInPlace src/caelestia/subcommands/record.py \
+        --replace-fail 'str(max_rr)' 'str(min(60, max_rr))' \
+        --replace-fail 'str(round(focused_monitor["refreshRate"]))' 'str(min(60, round(focused_monitor["refreshRate"])))'
+    '';
+  });
+
   qs = (quickshell.withModules [qt6.qtimageformats qt6.qtmultimedia m3shapes]).overrideAttrs (_: {
     installPhase = ''
       mkdir -p $out
@@ -61,7 +69,7 @@
       hyprland
     ]
     ++ extraRuntimeDeps
-    ++ lib.optional withCli caelestia-cli;
+    ++ lib.optional withCli cli;
 
   fontconfig = makeFontsConf {
     fontDirectories = [material-symbols rubik nerd-fonts.caskaydia-cove];
@@ -154,7 +162,7 @@ in
     '';
 
     passthru = {
-      inherit plugin extras;
+      inherit plugin extras cli;
     };
 
     meta = {

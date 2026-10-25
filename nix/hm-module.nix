@@ -6,7 +6,7 @@ self: {
 }: let
   inherit (pkgs.stdenv.hostPlatform) system;
 
-  cli-default = self.inputs.caelestia-cli.packages.${system}.default;
+  cli-default = shell-default.cli;
   shell-default = self.packages.${system}.with-cli;
 
   cfg = config.programs.caelestia;

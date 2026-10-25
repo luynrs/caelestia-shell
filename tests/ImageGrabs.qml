@@ -5,6 +5,7 @@ import Caelestia.Images
 
 ShellRoot {
     id: root
+
     property bool grabbed: false
     property int failures: 0
 
@@ -22,6 +23,7 @@ ShellRoot {
 
         Rectangle {
             id: redItem
+
             anchors.fill: parent
             color: "red"
         }
@@ -46,6 +48,7 @@ ShellRoot {
 
     Timer {
         id: settledTimer
+
         interval: 1000
         onTriggered: {
             root.check(root.grabbed, "Item capture must complete for the stale-result test");

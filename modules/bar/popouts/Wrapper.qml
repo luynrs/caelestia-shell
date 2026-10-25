@@ -32,19 +32,12 @@ Item {
     property string detachedMode
     property string queuedMode
 
-    Behavior on currentCenter {
-        enabled: root.offsetScale === 0 && !root.isDetached
-
-        Anim {
-            duration: root.animLength
-            easing: root.animCurve
-        }
-    }
-
     // Dummy object so Tokens attached prop resolves to global config
     // Anim configs are not per-monitor
     readonly property QtObject dummy: QtObject {}
+
     property int animLength: dummy.Tokens.anim.durations.expressiveDefaultSpatial
+
     property var animCurve: dummy.Tokens.anim.expressiveDefaultSpatial // The easingCurve type is Qt 6.11+ so we gotta use var for now
 
     function setAnims(detach: bool): void {
@@ -71,9 +64,11 @@ Item {
     }
 
     implicitWidth: nonAnimWidth
+
     implicitHeight: nonAnimHeight
 
     focus: hasCurrent
+
     Keys.onEscapePressed: {
         // Forward escape to password popout if active, otherwise close
         if (currentName === "wirelesspassword" && content.item) {
@@ -90,6 +85,15 @@ Item {
         // Don't intercept keys when password popout is active - let it handle them
         if (currentName === "wirelesspassword") {
             event.accepted = false;
+        }
+    }
+
+    Behavior on currentCenter {
+        enabled: root.offsetScale === 0 && !root.isDetached
+
+        Anim {
+            duration: root.animLength
+            easing: root.animCurve
         }
     }
 

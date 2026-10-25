@@ -16,7 +16,6 @@ Item {
 
     property color fallbackColour: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
 
-
     Behavior on fallbackColour {
         CAnim {}
     }

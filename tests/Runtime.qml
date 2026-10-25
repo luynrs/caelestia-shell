@@ -22,15 +22,6 @@ ShellRoot {
         }
     }
 
-    Item {
-        Controls.StyledProgressBar {
-            id: progress
-            width: 200
-            height: 4
-            indeterminate: true
-        }
-    }
-
     Component.onCompleted: {
         for (let index = 0; index < 12; index++) {
             Nmcli.executeCommand([index % 2 === 0 ? "--version" : "--test-failure"], result => {
@@ -48,6 +39,16 @@ ShellRoot {
         root.check(Services.Requests.pendingRequests.length === 1, "Empty geocoding results must not recursively request another lookup");
     }
 
+    Item {
+        Controls.StyledProgressBar {
+            id: progress
+
+            width: 200
+            height: 4
+            indeterminate: true
+        }
+    }
+
     Timer {
         interval: 150
         running: true
@@ -57,7 +58,12 @@ ShellRoot {
             root.previousProgress = root.indicatorManager.progress;
             visibleTimer.start();
 
-            Brightness.ddcMonitors = [{ connector: root.monitor.modelData.name, busNum: "test" }];
+            Brightness.ddcMonitors = [
+                {
+                    connector: root.monitor.modelData.name,
+                    busNum: "test"
+                }
+            ];
             root.check(root.monitor.isDdc, "DDC test monitor must be selected");
             brightnessTimer.start();
         }
@@ -65,6 +71,7 @@ ShellRoot {
 
     Timer {
         id: brightnessTimer
+
         interval: 50
         onTriggered: {
             root.monitor.brightness = 0.7;
@@ -77,6 +84,7 @@ ShellRoot {
 
     Timer {
         id: visibleTimer
+
         interval: 100
         onTriggered: {
             root.check(root.indicatorManager.progress !== root.previousProgress, "Visible progress must animate");
@@ -88,6 +96,7 @@ ShellRoot {
 
     Timer {
         id: collapsedTimer
+
         interval: 100
         onTriggered: {
             root.check(root.indicatorManager.progress === root.previousProgress, "Zero-height progress must stop updating");
@@ -100,6 +109,7 @@ ShellRoot {
 
     Timer {
         id: hiddenTimer
+
         interval: 100
         onTriggered: {
             root.check(root.indicatorManager.progress === root.previousProgress, "Hidden progress must stop updating");
@@ -111,6 +121,7 @@ ShellRoot {
 
     Timer {
         id: resumedTimer
+
         interval: 400
         onTriggered: {
             root.check(root.indicatorManager.progress !== root.previousProgress, "Visible progress must resume updating");

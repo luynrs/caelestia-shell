@@ -134,8 +134,6 @@ Item {
         id: xkbXml
 
         query: "/xkbConfigRegistry/layoutList/layout"
-        XmlListModelRole { name: "code"; elementName: "configItem/name" }
-        XmlListModelRole { name: "description"; elementName: "configItem/description" }
 
         onStatusChanged: {
             if (status === XmlListModel.Ready && count > 0) {
@@ -146,6 +144,15 @@ Item {
                 else
                     source = source.toString().replace(/[^/]+$/, "evdev.xml");
             }
+        }
+
+        XmlListModelRole {
+            name: "code"
+            elementName: "configItem/name"
+        }
+        XmlListModelRole {
+            name: "description"
+            elementName: "configItem/description"
         }
     }
 

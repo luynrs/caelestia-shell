@@ -39,6 +39,7 @@ ShellRoot {
 
     ScreenState {
         id: state
+
         modelData: Quickshell.screens[0]
     }
 
@@ -75,6 +76,7 @@ ShellRoot {
 
     Timer {
         id: compact
+
         interval: Tokens.anim.durations.expressiveSlowEffects + 100
         onTriggered: {
             root.check(root.findText(card, notification.body)?.color === Colours.palette.m3secondary, "Compact critical notification body must use its urgency foreground");
@@ -85,6 +87,7 @@ ShellRoot {
 
     Timer {
         id: normalCompact
+
         interval: Tokens.anim.durations.expressiveSlowEffects + 100
         onTriggered: {
             root.check(root.findText(card, notification.summary)?.color === Colours.palette.m3onSurface, "Normal notification summary must retain its ordinary foreground");
@@ -96,6 +99,7 @@ ShellRoot {
 
     Timer {
         id: normal
+
         interval: Tokens.anim.durations.expressiveSlowEffects + 100
         onTriggered: {
             root.check(card.color === Colours.layer(Colours.palette.m3surfaceContainerHigh, 2), "Normal notification must retain its ordinary background");

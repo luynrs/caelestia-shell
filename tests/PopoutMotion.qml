@@ -4,6 +4,7 @@ import qs.modules.bar.popouts as Popouts
 
 ShellRoot {
     id: root
+
     property real menuWidth: 360
     property real menuHeight: 240
     property int failures: 0
@@ -18,8 +19,17 @@ ShellRoot {
         }
     }
 
+    Component.onCompleted: {
+        realPopout.content.currentName = "audio";
+        realPopout.content.hasCurrent = true;
+        popout.content.content.sourceComponent = menus;
+        popout.content.currentCenter = stage.width - 5;
+        popout.content.hasCurrent = true;
+    }
+
     Component {
         id: menus
+
         Item {
             implicitWidth: root.menuWidth
             implicitHeight: root.menuHeight
@@ -28,26 +38,22 @@ ShellRoot {
 
     Item {
         id: stage
+
         width: 1280
         height: 720
+
         Popouts.ClipWrapper {
             id: realPopout
+
             screen: Quickshell.screens[0]
             borderThickness: 10
         }
         Popouts.ClipWrapper {
             id: popout
+
             screen: Quickshell.screens[0]
             borderThickness: 10
         }
-    }
-
-    Component.onCompleted: {
-        realPopout.content.currentName = "audio";
-        realPopout.content.hasCurrent = true;
-        popout.content.content.sourceComponent = menus;
-        popout.content.currentCenter = stage.width - 5;
-        popout.content.hasCurrent = true;
     }
 
     Timer {

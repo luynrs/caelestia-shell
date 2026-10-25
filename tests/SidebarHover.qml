@@ -39,6 +39,7 @@ ShellRoot {
 
     Component {
         id: notificationComponent
+
         NotifData {
             popup: true
             hints: ({})
@@ -54,6 +55,7 @@ ShellRoot {
 
     Drawers.ContentWindow {
         id: window
+
         screen: Quickshell.screens[0]
         contentItem.opacity: 0
         mask: Region {}
@@ -67,6 +69,7 @@ ShellRoot {
 
     Timer {
         id: closingProbe
+
         interval: 16
         repeat: true
         onTriggered: {
@@ -158,7 +161,9 @@ ShellRoot {
                 root.move(1, window.height - 1);
                 root.check(!state.sidebar, "Returning to the bottom-left corner must keep the sidebar closed");
                 state.utilities = true;
-                Notifs.list = Array.from({length: 20}, () => notificationComponent.createObject(root));
+                Notifs.list = Array.from({
+                    length: 20
+                }, () => notificationComponent.createObject(root));
                 break;
             case 6:
                 root.check(panels.notifications.height > 0 && panels.notifications.y >= -1, "A large popup stack must fit below the top bar");

@@ -167,6 +167,7 @@ Item {
         required property string name
         readonly property bool ready: status === Loader.Ready && ((item as TrayMenu)?.ready ?? true)
         readonly property bool shouldBeActive: root.popouts.hasCurrent && root.requestedPopout === popout && ready
+
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
 

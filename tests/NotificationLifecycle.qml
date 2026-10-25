@@ -20,6 +20,11 @@ ShellRoot {
         }
     }
 
+    Component.onCompleted: {
+        notification = notificationComponent.createObject(root);
+        Notifs.list = [notification];
+    }
+
     Component {
         id: notificationComponent
 
@@ -35,17 +40,20 @@ ShellRoot {
 
     PanelWindow {
         id: container
+
         visible: true
         implicitWidth: 500
         implicitHeight: 500
 
         ScreenState {
             id: testState
+
             modelData: Quickshell.screens[0]
         }
 
         Notifications.Content {
             id: notifications
+
             width: 500
             screenState: testState
             osdPanel: container.contentItem
@@ -61,11 +69,6 @@ ShellRoot {
                 implicitWidth: 400
             }
         }
-    }
-
-    Component.onCompleted: {
-        notification = notificationComponent.createObject(root);
-        Notifs.list = [notification];
     }
 
     Timer {
@@ -87,6 +90,7 @@ ShellRoot {
 
     Timer {
         id: retained
+
         interval: 32
         onTriggered: {
             root.check(root.notification !== null && Notifs.list.length === 1, "A closing popup must retain its data through delayed removal");
@@ -97,12 +101,14 @@ ShellRoot {
 
     Timer {
         id: closing
+
         interval: Tokens.anim.durations.normal / 2
         onTriggered: root.check(Math.abs(notifications.implicitHeight - root.closingHeight) < 1, "The popup viewport must not shrink midway through its exit slide")
     }
 
     Timer {
         id: finish
+
         interval: 1000
         onTriggered: {
             root.check(Notifs.list.length === 0, "Destroying the final delegate must release closed data");
@@ -117,6 +123,7 @@ ShellRoot {
 
     Timer {
         id: expire
+
         interval: 100
         onTriggered: {
             root.check(root.notification.locks.size === 2, "A subsequent notification must acquire both popup locks");
@@ -128,6 +135,7 @@ ShellRoot {
 
     Timer {
         id: expired
+
         interval: 1000
         onTriggered: {
             root.check(root.notification !== null && Notifs.list.length === 1, "Popup expiry must preserve notification history");
@@ -139,6 +147,7 @@ ShellRoot {
 
     Timer {
         id: cleanup
+
         interval: 100
         onTriggered: {
             root.check(Notifs.list.length === 0 && root.notification === null, "Closing expired history must destroy its data");

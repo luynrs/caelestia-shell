@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
-import qs.modules.bar.components as Widgets
 import qs.services
+import qs.modules.bar.components as Widgets
 
 ShellRoot {
     id: root
@@ -48,14 +48,17 @@ ShellRoot {
         Item {
             id: bar
 
-            anchors.fill: parent
             readonly property int spacing: 0
+
             readonly property int hPadding: 0
+
             readonly property QtObject popouts: QtObject {
                 property bool hasCurrent: false
                 property string currentName: ""
                 property real currentCenter: 0
             }
+
+            anchors.fill: parent
 
             Widgets.ActiveWindow {
                 id: activeWindow

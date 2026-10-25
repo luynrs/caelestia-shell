@@ -1,6 +1,6 @@
+import "fixtures"
 import QtQuick
 import Quickshell
-import "fixtures"
 import qs.modules.bar.popouts as Popouts
 
 ShellRoot {
@@ -35,58 +35,6 @@ ShellRoot {
         }
     }
 
-    TrayMenuHandle {
-        id: firstMenu
-        entries: [openEntry, separatorEntry, quitEntry]
-    }
-
-    TrayMenuHandle {
-        id: delayedMenu
-    }
-
-    TrayMenuHandle {
-        id: emptyMenu
-    }
-
-    TrayMenuHandle {
-        id: openEntry
-        text: "Open application"
-        icon: Qt.resolvedUrl("assets/logo.svg")
-        entries: [quitEntry]
-    }
-
-    TrayMenuHandle {
-        id: separatorEntry
-        isSeparator: true
-    }
-
-    TrayMenuHandle {
-        id: quitEntry
-        text: "Quit application"
-    }
-
-    TrayMenuHandle {
-        id: preferencesEntry
-        text: "Preferences"
-    }
-
-    Item {
-        width: 1280
-        height: 720
-
-        Popouts.ClipWrapper {
-            id: popout
-            screen: Quickshell.screens[0]
-            borderThickness: 10
-        }
-
-        Popouts.ClipWrapper {
-            id: emptyPopout
-            screen: Quickshell.screens[0]
-            borderThickness: 10
-        }
-    }
-
     Component.onCompleted: {
         Popouts.TrayRegistry.entries = [
             {
@@ -118,6 +66,65 @@ ShellRoot {
         root.iconLabel = rows[0].children[0].item?.children.find(child => child.text === openEntry.text) ?? null;
         if (root.iconLabel)
             root.initialLabelOffset = root.iconLabel.x;
+    }
+
+    TrayMenuHandle {
+        id: firstMenu
+
+        entries: [openEntry, separatorEntry, quitEntry]
+    }
+
+    TrayMenuHandle {
+        id: delayedMenu
+    }
+
+    TrayMenuHandle {
+        id: emptyMenu
+    }
+
+    TrayMenuHandle {
+        id: openEntry
+
+        text: "Open application"
+        icon: Qt.resolvedUrl("assets/logo.svg")
+        entries: [quitEntry]
+    }
+
+    TrayMenuHandle {
+        id: separatorEntry
+
+        isSeparator: true
+    }
+
+    TrayMenuHandle {
+        id: quitEntry
+
+        text: "Quit application"
+    }
+
+    TrayMenuHandle {
+        id: preferencesEntry
+
+        text: "Preferences"
+    }
+
+    Item {
+        width: 1280
+        height: 720
+
+        Popouts.ClipWrapper {
+            id: popout
+
+            screen: Quickshell.screens[0]
+            borderThickness: 10
+        }
+
+        Popouts.ClipWrapper {
+            id: emptyPopout
+
+            screen: Quickshell.screens[0]
+            borderThickness: 10
+        }
     }
 
     Timer {
@@ -222,6 +229,7 @@ ShellRoot {
 
     Timer {
         id: populate
+
         interval: 640
         onTriggered: {
             delayedMenu.entries = [openEntry, quitEntry];
@@ -232,24 +240,28 @@ ShellRoot {
 
     Timer {
         id: cancel
+
         interval: 80
         onTriggered: popout.content.currentName = "traymenu0"
     }
 
     Timer {
         id: reopen
+
         interval: 80
         onTriggered: popout.content.hasCurrent = true
     }
 
     Timer {
         id: submenuPopulate
+
         interval: 160
         onTriggered: openEntry.entries = [preferencesEntry]
     }
 
     Timer {
         id: repopulate
+
         interval: 640
         onTriggered: {
             root.check(root.retainedMenu.ready === false, "Clearing the current menu must exercise loss of measured readiness");

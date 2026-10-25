@@ -13,7 +13,7 @@ Singleton {
     property string error: ""
     readonly property string previewDirectory: Quickshell.env("XDG_RUNTIME_DIR") + "/caelestia-clipboard"
 
-    signal copied()
+    signal copied
 
     function refresh(): void {
         if (busy)

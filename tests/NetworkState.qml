@@ -23,9 +23,28 @@ ShellRoot {
 
     function weatherPayload(temperature: real): string {
         return JSON.stringify({
-            current: { weather_code: 0, temperature_2m: temperature, apparent_temperature: temperature, relative_humidity_2m: 50, wind_speed_10m: 5, is_day: 1 },
-            daily: { time: ["2026-10-25"], sunrise: ["2026-10-25T07:00"], sunset: ["2026-10-25T18:00"], temperature_2m_max: [temperature], temperature_2m_min: [temperature], weather_code: [0] },
-            hourly: { time: ["2026-10-25T12:00"], temperature_2m: [temperature], precipitation_probability: [0], weather_code: [0] }
+            current: {
+                weather_code: 0,
+                temperature_2m: temperature,
+                apparent_temperature: temperature,
+                relative_humidity_2m: 50,
+                wind_speed_10m: 5,
+                is_day: 1
+            },
+            daily: {
+                time: ["2026-10-25"],
+                sunrise: ["2026-10-25T07:00"],
+                sunset: ["2026-10-25T18:00"],
+                temperature_2m_max: [temperature],
+                temperature_2m_min: [temperature],
+                weather_code: [0]
+            },
+            hourly: {
+                time: ["2026-10-25T12:00"],
+                temperature_2m: [temperature],
+                precipitation_probability: [0],
+                weather_code: [0]
+            }
         });
     }
 
@@ -54,8 +73,20 @@ ShellRoot {
 
     function testVpnSwitch(): void {
         GlobalConfig.utilities.toasts.vpnChanged = false;
-        VPN.addProvider({name: "tailscale", displayName: "Previous provider", interface: "tailscale0", connectCmd: [], disconnectCmd: []});
-        VPN.addProvider({name: "warp", displayName: "Current provider", interface: "CloudflareWARP", connectCmd: [], disconnectCmd: []});
+        VPN.addProvider({
+            name: "tailscale",
+            displayName: "Previous provider",
+            interface: "tailscale0",
+            connectCmd: [],
+            disconnectCmd: []
+        });
+        VPN.addProvider({
+            name: "warp",
+            displayName: "Current provider",
+            interface: "CloudflareWARP",
+            connectCmd: [],
+            disconnectCmd: []
+        });
         VPN.checkStatus();
         vpnSwitchTimer.start();
     }
@@ -64,7 +95,10 @@ ShellRoot {
         root.check(Nmcli.active?.ssid === " Cafe\\Lab:Guest ", "Pending connection checks must use the active network from the command boundary");
         Nmcli.pendingConnection = null;
         Nmcli.checkPendingConnection();
-        Nmcli.pendingConnection = {ssid: Nmcli.active.ssid, callback: () => root.check(false, "A canceled connection must not complete")};
+        Nmcli.pendingConnection = {
+            ssid: Nmcli.active.ssid,
+            callback: () => root.check(false, "A canceled connection must not complete")
+        };
         Nmcli.checkPendingConnection();
         Nmcli.pendingConnection = null;
         Qt.callLater(() => {
@@ -77,7 +111,10 @@ ShellRoot {
     function testPendingReplacement(): void {
         let oldCallbacks = 0;
         let replacementCallbacks = 0;
-        const successor = {ssid: "Successor", callback: () => root.check(false, "A successor connection must not complete against the old active network")};
+        const successor = {
+            ssid: "Successor",
+            callback: () => root.check(false, "A successor connection must not complete against the old active network")
+        };
         const replacement = {
             ssid: Nmcli.active.ssid,
             callback: result => {
@@ -86,7 +123,10 @@ ShellRoot {
                 Nmcli.pendingConnection = successor;
             }
         };
-        Nmcli.pendingConnection = {ssid: Nmcli.active.ssid, callback: () => oldCallbacks++};
+        Nmcli.pendingConnection = {
+            ssid: Nmcli.active.ssid,
+            callback: () => oldCallbacks++
+        };
         Nmcli.checkPendingConnection();
         Nmcli.pendingConnection = replacement;
         Qt.callLater(() => {
@@ -104,11 +144,12 @@ ShellRoot {
     }
 
     Connections {
-        target: VPN
         function onStatusChanged(): void {
             if (VPN.providerName === "warp" && VPN.status.state === "error")
                 root.vpnWrongStatus = true;
         }
+
+        target: VPN
     }
 
     Timer {
@@ -140,6 +181,7 @@ ShellRoot {
 
     Timer {
         id: vpnSwitchTimer
+
         interval: 100
         onTriggered: {
             VPN.setActiveProvider(1);
@@ -149,6 +191,7 @@ ShellRoot {
 
     Timer {
         id: completionTimer
+
         interval: 2000
         onTriggered: {
             root.check(!root.vpnWrongStatus, "A previous provider's status output must not be parsed by the newly selected provider");

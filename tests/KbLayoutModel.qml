@@ -9,12 +9,27 @@ ShellRoot {
     property int failures: 0
     readonly property bool duplicateLayouts: Quickshell.env("KB_LAYOUT_TEST_SOURCE") === "duplicates"
     readonly property var expectedVisible: duplicateLayouts ? [
-        { layoutIndex: 0, label: "US - English (US)" },
-        { layoutIndex: 1, label: "US - English (US)" }
+        {
+            layoutIndex: 0,
+            label: "US - English (US)"
+        },
+        {
+            layoutIndex: 1,
+            label: "US - English (US)"
+        }
     ] : [
-        { layoutIndex: 0, label: "US - English (US)" },
-        { layoutIndex: 2, label: "GB - English (UK)" },
-        { layoutIndex: 3, label: "ZZ - zz" }
+        {
+            layoutIndex: 0,
+            label: "US - English (US)"
+        },
+        {
+            layoutIndex: 2,
+            label: "GB - English (UK)"
+        },
+        {
+            layoutIndex: 3,
+            label: "ZZ - zz"
+        }
     ]
 
     function check(condition: bool, message: string): void {
@@ -42,8 +57,7 @@ ShellRoot {
             root.check(layouts.visibleModel.count === root.expectedVisible.length, "Only the active group must be excluded, including repeated layout codes");
             if (layouts.visibleModel.count === root.expectedVisible.length) {
                 for (let i = 0; i < root.expectedVisible.length; i++) {
-                    root.check(layouts.visibleModel.get(i).layoutIndex === root.expectedVisible[i].layoutIndex && layouts.visibleModel.get(i).label === root.expectedVisible[i].label,
-                        "Visible group must retain its compositor index and layout description: " + layouts.visibleModel.get(i).layoutIndex + " " + layouts.visibleModel.get(i).label);
+                    root.check(layouts.visibleModel.get(i).layoutIndex === root.expectedVisible[i].layoutIndex && layouts.visibleModel.get(i).label === root.expectedVisible[i].label, "Visible group must retain its compositor index and layout description: " + layouts.visibleModel.get(i).layoutIndex + " " + layouts.visibleModel.get(i).label);
                 }
             }
             console.log("Keyboard-layout failures:", root.failures);

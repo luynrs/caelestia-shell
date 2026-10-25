@@ -1,6 +1,6 @@
+import "fixtures"
 import QtQuick
 import Quickshell
-import "fixtures"
 import qs.components
 import qs.modules.bar as Bar
 import qs.modules.bar.popouts as Popouts
@@ -36,18 +36,31 @@ ShellRoot {
         bar.checkPopout(item.mapToItem(bar, item.width / 2, item.height / 2).x);
     }
 
+    Component.onCompleted: {
+        Popouts.TrayRegistry.entries = [0, 1, 2].map(index => ({
+                    id: `hover-fixture-${index}`,
+                    icon: Qt.resolvedUrl("assets/logo.svg"),
+                    status: 1,
+                    hasMenu: index !== 2,
+                    menu
+                }));
+    }
+
     TrayMenuHandle {
         id: menu
+
         entries: [entry]
     }
 
     TrayMenuHandle {
         id: entry
+
         text: "Open application"
     }
 
     ScreenState {
         id: state
+
         modelData: Quickshell.screens[0]
         bar: true
     }
@@ -62,6 +75,7 @@ ShellRoot {
 
         Bar.BarWrapper {
             id: bar
+
             width: parent.width
             screen: Quickshell.screens[0]
             screenState: state
@@ -71,19 +85,10 @@ ShellRoot {
 
         Popouts.ClipWrapper {
             id: popout
+
             screen: Quickshell.screens[0]
             borderThickness: 10
         }
-    }
-
-    Component.onCompleted: {
-        Popouts.TrayRegistry.entries = [0, 1, 2].map(index => ({
-            id: `hover-fixture-${index}`,
-            icon: Qt.resolvedUrl("assets/logo.svg"),
-            status: 1,
-            hasMenu: index !== 2,
-            menu
-        }));
     }
 
     Timer {
@@ -103,6 +108,7 @@ ShellRoot {
 
     Timer {
         id: initial
+
         interval: 500
         onTriggered: {
             root.hover(0);
@@ -112,6 +118,7 @@ ShellRoot {
 
     Timer {
         id: gap
+
         interval: 650
         onTriggered: {
             root.check(popout.content.hasCurrent && popout.offsetScale < 0.001, "Initial tray menu must finish opening before the pointer crosses its gap");
@@ -127,6 +134,7 @@ ShellRoot {
 
     Timer {
         id: incoming
+
         interval: 100
         onTriggered: {
             root.hover(1);
@@ -147,6 +155,7 @@ ShellRoot {
 
     Timer {
         id: finish
+
         interval: 550
         onTriggered: {
             root.switching = false;
