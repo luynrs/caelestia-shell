@@ -3,6 +3,8 @@ import QtTest
 import Quickshell
 import Caelestia
 import Caelestia.Config
+import Caelestia.State
+import qs.components.controls as Controls
 import qs.services
 import qs.modules.drawers as Drawers
 
@@ -37,6 +39,18 @@ ShellRoot {
         return null;
     }
 
+    function findToggle(parent: Item): Controls.IconButton {
+        const button = parent as Controls.IconButton;
+        if (button?.icon === "notifications_off")
+            return button;
+        for (const child of parent.children) {
+            const found = findToggle(child);
+            if (found)
+                return found;
+        }
+        return null;
+    }
+
     Component {
         id: notificationComponent
 
@@ -58,13 +72,6 @@ ShellRoot {
 
         screen: Quickshell.screens[0]
         contentItem.opacity: 0
-        mask: Region {}
-        Component.onCompleted: {
-            const grab = contentItem.data.find(object => object.toString().includes("HyprlandFocusGrab"));
-            root.check(grab !== undefined, "The fixture must disable compositor grabs before simulating pointer events");
-            if (grab)
-                grab.active = false;
-        }
     }
 
     Timer {
@@ -144,6 +151,18 @@ ShellRoot {
                 const keepAwake = root.findItem(panels, "utilitiesKeepAwake");
                 const recorder = root.findItem(panels, "utilitiesScreenRecorder");
                 root.check(toggles !== null && notifications !== null && keepAwake !== null && recorder !== null, "All sidebar sections must load");
+                const toggle = root.findToggle(panels.utilities);
+                root.check(toggle !== null, "The quick-toggle click target must be loaded");
+                if (toggle) {
+                    const point = toggle.mapToItem(window.contentItem, toggle.width / 2, toggle.height / 2);
+                    const input = window.mask.regions.find(region => region.panel === panels.utilities);
+                    root.check(input && point.x >= input.x && point.x < input.x + input.width && point.y >= input.y && point.y < input.y + input.height, "The Wayland input region must include the visible quick toggle at " + point + "; actual region " + input?.x + "," + input?.y + " " + input?.width + "x" + input?.height);
+                    const initialDnd = PersistentState.doNotDisturb;
+                    root.check(events.mouseClick(toggle.stateLayer, toggle.width / 2, toggle.height / 2, Qt.LeftButton, Qt.NoModifier, 0), "The quick toggle must accept a click");
+                    root.check(PersistentState.doNotDisturb !== initialDnd && state.sidebar, "A quick toggle must change its state without closing the sidebar");
+                    root.check(events.mouseClick(toggle.stateLayer, toggle.width / 2, toggle.height / 2, Qt.LeftButton, Qt.NoModifier, 0), "The quick toggle must accept a repeated click");
+                    root.check(PersistentState.doNotDisturb === initialDnd && state.sidebar, "Repeated quick-toggle clicks must keep the sidebar open");
+                }
                 if (toggles && notifications && keepAwake && recorder) {
                     root.check(toggles.mapToItem(panels, 0, toggles.height).y < keepAwake.mapToItem(panels, 0, 0).y, "Quick toggles must precede keep-awake controls");
                     root.check(keepAwake.mapToItem(panels, 0, keepAwake.height).y < recorder.mapToItem(panels, 0, 0).y, "Keep-awake must precede the recorder");
