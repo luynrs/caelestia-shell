@@ -24,6 +24,7 @@ Item {
     readonly property real nonAnimHeight: children.find(c => c.shouldBeActive)?.implicitHeight ?? content.implicitHeight
     readonly property Item current: (content.item as Content)?.current ?? null
     readonly property bool isDetached: detachedMode.length > 0
+    readonly property bool fileDialogOpen: nexus.item?.fileDialogOpen ?? false
 
     property alias currentName: popoutState.currentName
     property alias hasCurrent: popoutState.hasCurrent
@@ -104,13 +105,13 @@ Item {
     }
 
     HyprlandFocusGrab {
-        active: root.isDetached && !(nexus.item?.fileDialogOpen ?? false)
+        active: root.isDetached && !root.fileDialogOpen
         windows: [QsWindow.window]
         onCleared: root.close()
     }
 
     Binding {
-        when: (root.isDetached && !(nexus.item?.fileDialogOpen ?? false)) || (root.hasCurrent && root.currentName === "wirelesspassword")
+        when: (root.isDetached && !root.fileDialogOpen) || (root.hasCurrent && root.currentName === "wirelesspassword")
 
         target: QsWindow.window
         property: "WlrLayershell.keyboardFocus"

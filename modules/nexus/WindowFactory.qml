@@ -12,6 +12,7 @@ Singleton {
     id: root
 
     function create(parent: Item, props: var): void {
+        ShellState.componentsForActive()?.rootWindow?.dismissPanels();
         nexusComp.createObject(parent ?? dummy, props);
     }
 

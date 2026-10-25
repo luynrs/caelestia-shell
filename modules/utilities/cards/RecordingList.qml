@@ -106,8 +106,7 @@ ColumnLayout {
                 icon: "play_arrow"
                 type: IconButton.Text
                 onClicked: {
-                    root.screenState.utilities = false;
-                    root.screenState.sidebar = false;
+                    ShellState.componentsFor(root.screenState.modelData)?.rootWindow?.dismissPanels();
                     Quickshell.execDetached([...GlobalConfig.general.apps.playback, recording.modelData.path]);
                 }
             }
@@ -116,8 +115,7 @@ ColumnLayout {
                 icon: "folder"
                 type: IconButton.Text
                 onClicked: {
-                    root.screenState.utilities = false;
-                    root.screenState.sidebar = false;
+                    ShellState.componentsFor(root.screenState.modelData)?.rootWindow?.dismissPanels();
                     Quickshell.execDetached([...GlobalConfig.general.apps.explorer, recording.modelData.path]);
                 }
             }

@@ -41,6 +41,10 @@ StyledWindow {
     readonly property real borderLayoutThickness: hasFullscreen ? 0 : contentItem.Config.border.thickness
 
     property color surfaceColour: Colours.tPalette.m3surface
+    readonly property bool nativeDialogOpen: panels.dashboard.facePicker.visible || panels.popouts.fileDialogOpen
+    readonly property bool panelsOpen: panels.launcher.shouldBeActive || panels.dashboard.shouldBeActive || panels.session.shouldBeActive || panels.sidebar.shouldBeActive || panels.utilities.shouldBeActive || panels.osd.shouldBeActive || panels.popouts.hasCurrent || panels.popouts.isDetached
+    readonly property bool panelsVisible: panels.launcher.visible || panels.dashboard.visible || panels.session.visible || panels.sidebar.visible || panels.utilities.visible || panels.osd.visible || panels.popoutsWrapper.visible
+    property bool externalWindowPending
 
     readonly property int dragMaskPadding: {
         if (focusGrab.active || panels.popouts.isDetached)
@@ -56,6 +60,28 @@ StyledWindow {
         return Math.max(...thresholds);
     }
 
+    function dismissPanels(): void {
+        root.externalWindowPending = root.panelsVisible;
+        root.screenState.launcher = false;
+        root.screenState.dashboard = false;
+        root.screenState.session = false;
+        root.screenState.sidebar = false;
+        root.screenState.utilities = false;
+        root.screenState.osd = false;
+        panels.popouts.close();
+        bar.closeTray();
+    }
+
+    onPanelsOpenChanged: {
+        if (panelsOpen)
+            externalWindowPending = false;
+    }
+
+    onPanelsVisibleChanged: {
+        if (!panelsVisible)
+            externalWindowPending = false;
+    }
+
     onHasFullscreenChanged: {
         screenState.launcher = false;
         screenState.session = false;
@@ -65,8 +91,16 @@ StyledWindow {
 
     name: "drawers"
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: (fsTransitionProg > 0 && contentItem.Config.general.showOverFullscreen) || (hasSpecialWorkspace && hasFullscreenOnNormalWs) ? WlrLayer.Overlay : WlrLayer.Top
-    WlrLayershell.keyboardFocus: screenState.launcher || screenState.session ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.layer: {
+        if (nativeDialogOpen || externalWindowPending)
+            return WlrLayer.Bottom;
+        if ((fsTransitionProg > 0 && contentItem.Config.general.showOverFullscreen) || (hasSpecialWorkspace && hasFullscreenOnNormalWs))
+            return WlrLayer.Overlay;
+        if (panelsOpen || panelsVisible || panels.notifications.visible || panels.toasts.height > 0)
+            return WlrLayer.Top;
+        return WlrLayer.Bottom;
+    }
+    WlrLayershell.keyboardFocus: !nativeDialogOpen && !externalWindowPending && (screenState.launcher || screenState.session) ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     mask: hasFullscreen ? emptyRegion : regions
 
@@ -111,13 +145,15 @@ StyledWindow {
         id: focusGrab
 
         active: {
+            if (root.nativeDialogOpen || root.externalWindowPending)
+                return false;
             const s = root.screenState;
             const conf = root.contentItem.Config;
             if ((s.launcher && conf.launcher.enabled) || (s.session && conf.session.enabled) || (s.sidebar && conf.sidebar.enabled))
                 return true;
             if (!conf.dashboard.showOnHover && s.dashboard && conf.dashboard.enabled)
                 return true;
-            if (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1)
+            if (panels.popouts.hasCurrent && panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1)
                 return true;
             return false;
         }
@@ -130,6 +166,15 @@ StyledWindow {
             panels.popouts.hasCurrent = false;
             bar.closeTray();
         }
+    }
+
+    Connections {
+        function onRawEvent(event: HyprlandEvent): void {
+            if (event.name === "changefloatingmode" && !root.nativeDialogOpen)
+                root.dismissPanels();
+        }
+
+        target: Hyprland
     }
 
     StyledRect {
