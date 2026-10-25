@@ -75,11 +75,13 @@ Item {
                 bottom = Math.min(bottom, utilities.y);
             if (toasts.height > 0)
                 bottom -= toasts.height + Tokens.padding.medium;
-            return Math.max(0, bottom);
+            return Math.max(0, bottom - Config.border.thickness + root.borderThickness);
         }
 
         anchors.bottom: utilities.visible && !utilities.attachedToSidebar ? utilities.top : parent.bottom
         anchors.right: parent.right
+        anchors.bottomMargin: Config.border.thickness - root.borderThickness - 5
+        anchors.rightMargin: Config.border.thickness - root.borderThickness
     }
 
     Item {

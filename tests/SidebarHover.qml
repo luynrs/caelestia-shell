@@ -12,6 +12,8 @@ ShellRoot {
     property int failures: 0
     property int step: 0
     property int closingSamples: 0
+    property int fullscreenSamples: 0
+    property point notificationCorner
 
     function check(condition: bool, message: string): void {
         if (!condition) {
@@ -88,6 +90,18 @@ ShellRoot {
     }
 
     Timer {
+        interval: 16
+        running: root.step === 11 || root.step === 12
+        repeat: true
+        onTriggered: {
+            const popup = window.interactionWrapper.panels.notifications;
+            const corner = popup.mapToItem(window.contentItem, popup.width, popup.height);
+            root.fullscreenSamples++;
+            root.check(Math.abs(corner.y - root.notificationCorner.y) < 1 && Math.abs(corner.x - root.notificationCorner.x) < 1, "Fullscreen transitions must preserve the popup's lower-right position: " + corner + " instead of " + root.notificationCorner);
+        }
+    }
+
+    Timer {
         interval: 650
         running: true
         repeat: true
@@ -100,6 +114,7 @@ ShellRoot {
                 root.move(window.width - 1, 1);
                 root.check(!state.sidebar, "Top-right corner must no longer open the sidebar");
                 state.sidebar = false;
+                GlobalConfig.appearance.deformScale = 0;
                 Notifs.list = [notificationComponent.createObject(root)];
                 Toaster.toast("Toast placement regression", "Internal messages must not cover notifications", "info", Toast.Info, 10000);
                 break;
@@ -172,6 +187,21 @@ ShellRoot {
                 break;
             case 9:
                 root.check(!panels.sidebar.visible && root.findItem(panels.utilities, "utilitiesQuickToggles") !== null, "A disabled sidebar must not hide quick toggles from the remaining utility controls");
+                state.sidebar = false;
+                Notifs.list = [notificationComponent.createObject(root)];
+                break;
+            case 10:
+                root.notificationCorner = panels.notifications.mapToItem(window.contentItem, panels.notifications.width, panels.notifications.height);
+                window.fsTransitionProg = 1;
+                window.bar.fullscreen = true;
+                break;
+            case 11:
+                root.check(window.bar.height === 0, "The fullscreen placement check must run with the top bar hidden");
+                window.fsTransitionProg = 0;
+                window.bar.fullscreen = false;
+                break;
+            case 12:
+                root.check(root.fullscreenSamples > 0, "Popup position checks must cover fullscreen transitions");
                 console.log("Sidebar hover failures:", root.failures);
                 Qt.exit(root.failures === 0 ? 0 : 1);
             }
