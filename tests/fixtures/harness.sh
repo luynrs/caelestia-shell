@@ -1,6 +1,6 @@
 test_dir=$(mktemp -d)
 trap 'rm -rf -- "$test_dir"' EXIT
-for directory in components modules utils assets; do
+for directory in components modules daemons utils assets; do
     ln -s "$source_dir/$directory" "$test_dir/$directory"
 done
 mkdir -p "$test_dir/services" "$test_dir/bin" "$test_dir/cache" "$test_dir/config" "$test_dir/state/caelestia/wallpaper"
@@ -33,6 +33,15 @@ export PATH="$test_dir/bin:$PATH"
 export XDG_CACHE_HOME="$test_dir/cache"
 export XDG_CONFIG_HOME="$test_dir/config"
 export XDG_STATE_HOME="$test_dir/state"
+case ${WAYLAND_DISPLAY:-} in
+    ''|/*) ;;
+    *) export WAYLAND_DISPLAY="${XDG_RUNTIME_DIR:?}/${WAYLAND_DISPLAY}" ;;
+esac
+mkdir -m 700 "$test_dir/runtime"
+if [[ -d ${XDG_RUNTIME_DIR:-}/hypr ]]; then
+    ln -s "$XDG_RUNTIME_DIR/hypr" "$test_dir/runtime/hypr"
+fi
+export XDG_RUNTIME_DIR="$test_dir/runtime"
 
 run_test() {
     test_status=0

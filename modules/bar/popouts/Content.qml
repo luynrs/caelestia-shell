@@ -147,9 +147,15 @@ Item {
                 required property SystemTrayItem modelData
 
                 name: `traymenu${root.trayItemsToIndices[modelData.id]}`
-                sourceComponent: TrayMenu {
-                    popouts: root.popouts
-                    trayItem: trayMenu.modelData.menu // qmllint disable unresolved-type
+                sourceComponent: trayMenuComp
+
+                Component {
+                    id: trayMenuComp
+
+                    TrayMenu {
+                        popouts: root.popouts
+                        trayItem: trayMenu.modelData.menu // qmllint disable incompatible-type
+                    }
                 }
             }
         }

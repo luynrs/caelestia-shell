@@ -213,7 +213,6 @@ Item {
     Process {
         id: switchProc
 
-        onRunningChanged: if (!running)
-            fetchActiveLayouts.running = true
+        onExited: fetchActiveLayouts.running = true
     }
 }

@@ -12,8 +12,8 @@
 #include <stdexcept>
 #include <thread>
 
-using caelestia::services::AudioCollector;
-using caelestia::services::ac::k_chunkSize;
+using caelestia::shell::services::AudioCollector;
+using caelestia::shell::services::ac::k_chunkSize;
 
 namespace {
 
@@ -38,7 +38,7 @@ void verify_chunks() {
     samples[1] = -16384;
     samples[2] = 0;
     samples[3] = 32767;
-    collector.loadChunk(samples.data(), k_chunkSize);
+    collector.loadChunk(samples.data(), 4);
     float_samples.fill(8.0f);
     double_samples.fill(8.0);
     require(collector.readChunk(float_samples.data(), 4) == 4, "Short float read must preserve its requested count");
@@ -50,26 +50,46 @@ void verify_chunks() {
     }
     require(float_samples[4] > 7.0f && double_samples[4] > 7.0, "Short reads must not overwrite their destination tail");
 
+    collector.loadChunk(samples.data(), k_chunkSize);
     require(collector.readChunk(float_samples.data(), k_chunkSize + 8) == k_chunkSize, "Oversized float read must be clamped");
     require(collector.readChunk(double_samples.data(), k_chunkSize + 8) == k_chunkSize, "Oversized double read must be clamped");
     require(float_samples[k_chunkSize] > 7.0f && double_samples[k_chunkSize] > 7.0, "Clamped reads must not overflow the chunk");
     require(std::abs(float_samples[k_chunkSize - 1] - 0.5f) < 0.000001f && std::abs(double_samples[k_chunkSize - 1] - 0.5) < 0.000001, "Full chunks must preserve their final sample");
 
+    collector.readChunk(float_samples.data(), 4);
+    collector.readChunk(double_samples.data(), 4);
+    for (size_t i = 0; i < 4; i++) {
+        require(std::abs(float_samples[i] - 0.5f) < 0.000001f, "Short float reads must return the newest samples");
+        require(std::abs(double_samples[i] - 0.5) < 0.000001, "Short double reads must return the newest samples");
+    }
+
+    samples.fill(16384);
     collector.loadChunk(samples.data(), k_chunkSize);
     samples.fill(8192);
     collector.loadChunk(samples.data(), 3);
     require(collector.readChunk(float_samples.data(), 0) == k_chunkSize, "Zero float read count must request a complete chunk");
     require(collector.readChunk(double_samples.data(), 0) == k_chunkSize, "Zero double read count must request a complete chunk");
     for (size_t i = 0; i < k_chunkSize; i++) {
-        require(std::abs(float_samples[i] - (i < 3 ? 0.25f : 0.0f)) < 0.000001f, "Partial float chunks must zero unused samples");
-        require(std::abs(double_samples[i] - (i < 3 ? 0.25 : 0.0)) < 0.000001, "Partial double chunks must zero unused samples");
+        require(std::abs(float_samples[i] - (i < k_chunkSize - 3 ? 0.5f : 0.25f)) < 0.000001f, "Partial float chunks must append to the rolling window");
+        require(std::abs(double_samples[i] - (i < k_chunkSize - 3 ? 0.5 : 0.25)) < 0.000001, "Partial double chunks must append to the rolling window");
     }
 
     collector.loadChunk(samples.data(), 0);
     collector.readChunk(float_samples.data());
     collector.readChunk(double_samples.data());
-    require(std::ranges::all_of(float_samples.begin(), float_samples.begin() + k_chunkSize, [](float sample) { return std::abs(sample) < 0.000001f; }), "Empty float chunks must contain silence");
-    require(std::ranges::all_of(double_samples.begin(), double_samples.begin() + k_chunkSize, [](double sample) { return std::abs(sample) < 0.000001; }), "Empty double chunks must contain silence");
+    for (size_t i = 0; i < k_chunkSize; i++) {
+        require(std::abs(float_samples[i] - (i < k_chunkSize - 3 ? 0.5f : 0.25f)) < 0.000001f, "Empty float writes must preserve the rolling window");
+        require(std::abs(double_samples[i] - (i < k_chunkSize - 3 ? 0.5 : 0.25)) < 0.000001, "Empty double writes must preserve the rolling window");
+    }
+
+    collector.clearBuffer();
+    collector.loadChunk(samples.data(), 3);
+    collector.readChunk(float_samples.data());
+    collector.readChunk(double_samples.data());
+    for (size_t i = 0; i < k_chunkSize; i++) {
+        require(std::abs(float_samples[i] - (i < k_chunkSize - 3 ? 0.0f : 0.25f)) < 0.000001f, "Float windows must pad missing history at the front after a clear");
+        require(std::abs(double_samples[i] - (i < k_chunkSize - 3 ? 0.0 : 0.25)) < 0.000001, "Double windows must pad missing history at the front after a clear");
+    }
 
     samples.fill(-16384);
     collector.loadChunk(samples.data(), static_cast<quint32>(samples.size()));

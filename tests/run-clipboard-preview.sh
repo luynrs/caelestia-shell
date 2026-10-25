@@ -6,12 +6,6 @@ source "$source_dir/tests/fixtures/harness.sh"
 cp "$source_dir/tests/fixtures/Hypr.qml" "$test_dir/services/Hypr.qml"
 cp "$source_dir/tests/fixtures/Wallpapers.qml" "$test_dir/services/Wallpapers.qml"
 cp "$source_dir/tests/ClipboardPreview.qml" "$test_dir/shell.qml"
-case ${WAYLAND_DISPLAY:-} in
-    /*) ;;
-    *) export WAYLAND_DISPLAY="${XDG_RUNTIME_DIR:?}/${WAYLAND_DISPLAY:?}" ;;
-esac
-export XDG_RUNTIME_DIR="$test_dir/runtime"
-mkdir -m 700 "$XDG_RUNTIME_DIR"
 cat > "$test_dir/bin/cliphist" <<'SH'
 #!/bin/sh
 if [ "$1" = decode ] && [ "$2" = 201 ]; then

@@ -23,7 +23,7 @@ Item {
     readonly property real maxViewX: Math.max(0, view.implicitWidth - width)
 
     readonly property Workspace activeWs: {
-        view.children;
+        CUtils.dependency(view.children);
         return specialItems.itemAt(activeIdx) as Workspace;
     }
 

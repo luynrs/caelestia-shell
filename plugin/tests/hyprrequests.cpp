@@ -11,7 +11,7 @@
 #include "hyprdevices.hpp"
 #include "hyprextras.hpp"
 
-using caelestia::services::hypr::HyprExtras;
+using caelestia::shell::services::hypr::HyprExtras;
 
 class c_hypr_request_test : public QObject {
     Q_OBJECT

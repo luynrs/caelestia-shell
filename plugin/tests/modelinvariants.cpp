@@ -18,12 +18,12 @@ private slots:
         delegate.setData("import QtQuick\nItem {}", QUrl());
         QVERIFY2(delegate.isReady(), qPrintable(delegate.errorString()));
         QStandardItemModel model(3, 1);
-        caelestia::components::AnimatedRepeater repeater;
+        caelestia::shell::components::AnimatedRepeater repeater;
         repeater.setDelegate(&delegate);
         repeater.setModel(QVariant::fromValue(&model));
         repeater.componentComplete();
         QList<int> notified_counts;
-        connect(&repeater, &caelestia::components::AnimatedRepeater::countChanged, this, [&] {
+        connect(&repeater, &caelestia::shell::components::AnimatedRepeater::countChanged, this, [&] {
             notified_counts.append(repeater.count());
         });
         QVERIFY(model.removeRow(1));
@@ -38,20 +38,20 @@ private slots:
             QFile file(directory.filePath(name));
             QVERIFY(file.open(QIODevice::WriteOnly));
         }
-        caelestia::models::FileSystemModel model;
+        caelestia::shell::models::FileSystemModel model;
         model.setPath(directory.path());
         QTRY_COMPARE(model.rowCount(), 3);
-        QCOMPARE(model.data(model.index(0, 0), Qt::UserRole).value<caelestia::models::FileSystemEntry*>()->name(), QStringLiteral("a.txt"));
+        QCOMPARE(model.data(model.index(0, 0), Qt::UserRole).value<caelestia::shell::models::FileSystemEntry*>()->name(), QStringLiteral("a.txt"));
         model.setSortReverse(true);
-        QTRY_COMPARE(model.data(model.index(0, 0), Qt::UserRole).value<caelestia::models::FileSystemEntry*>()->name(), QStringLiteral("d.txt"));
-        QCOMPARE(model.data(model.index(2, 0), Qt::UserRole).value<caelestia::models::FileSystemEntry*>()->name(), QStringLiteral("a.txt"));
+        QTRY_COMPARE(model.data(model.index(0, 0), Qt::UserRole).value<caelestia::shell::models::FileSystemEntry*>()->name(), QStringLiteral("d.txt"));
+        QCOMPARE(model.data(model.index(2, 0), Qt::UserRole).value<caelestia::shell::models::FileSystemEntry*>()->name(), QStringLiteral("a.txt"));
         QFile added_file(directory.filePath(QStringLiteral("b.txt")));
         QVERIFY(added_file.open(QIODevice::WriteOnly));
         added_file.close();
         QTRY_COMPARE(model.rowCount(), 4);
-        QCOMPARE(model.data(model.index(2, 0), Qt::UserRole).value<caelestia::models::FileSystemEntry*>()->name(), QStringLiteral("b.txt"));
+        QCOMPARE(model.data(model.index(2, 0), Qt::UserRole).value<caelestia::shell::models::FileSystemEntry*>()->name(), QStringLiteral("b.txt"));
         model.setSortReverse(false);
-        QTRY_COMPARE(model.data(model.index(0, 0), Qt::UserRole).value<caelestia::models::FileSystemEntry*>()->name(), QStringLiteral("a.txt"));
+        QTRY_COMPARE(model.data(model.index(0, 0), Qt::UserRole).value<caelestia::shell::models::FileSystemEntry*>()->name(), QStringLiteral("a.txt"));
     }
 };
 

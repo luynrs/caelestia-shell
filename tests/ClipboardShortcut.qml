@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
 import Caelestia.Config
-import qs.modules as Modules
+import qs.daemons as Daemons
 import qs.services
 
 ShellRoot {
@@ -16,7 +16,7 @@ ShellRoot {
         }
     }
 
-    Modules.Shortcuts {
+    Daemons.Shortcuts {
         id: shortcuts
     }
 

@@ -22,6 +22,7 @@ CustomMouseArea {
     property bool dashboardShortcutActive
     property bool osdShortcutActive
     property bool utilitiesShortcutActive
+    property bool sidebarShortcutActive
 
     function inSidebarCorner(x: real, y: real): bool {
         return x > Math.min(width - Config.border.minThickness, panels.x + panels.sidebar.x) && y >= height - Math.max(Config.sidebar.minHoverThreshold, Config.border.minThickness);
@@ -85,7 +86,7 @@ CustomMouseArea {
             if (Config.bar.showOnHover)
                 bar.isHovered = false;
 
-            if (Config.sidebar.showOnHover)
+            if (Config.sidebar.showOnHover && !sidebarShortcutActive)
                 screenState.sidebar = false;
         }
     }
@@ -133,7 +134,7 @@ CustomMouseArea {
             const showSidebar = pressed && dragStart.x > Math.min(width - Config.border.minThickness, panels.x + panels.sidebar.x);
 
             // Show sidebar on hover (top-right corner, bounded by notification panel height)
-            if (Config.sidebar.showOnHover) {
+            if (Config.sidebar.showOnHover && Config.sidebar.enabled) {
                 const showSidebarHover = inSidebarCorner(x, y);
                 if (showSidebarHover && !screenState.sidebar)
                     screenState.sidebar = true;
@@ -177,14 +178,17 @@ CustomMouseArea {
             }
 
             // Show/hide sidebar on hover
-            if (Config.sidebar.showOnHover && !pressed) {
+            if (Config.sidebar.showOnHover && Config.sidebar.enabled && !pressed) {
                 const showSidebarHover = inSidebarCorner(x, y);
                 if (showSidebarHover && !screenState.sidebar) {
                     screenState.sidebar = true;
-                } else if (!showSidebarHover) {
+                } else if (!sidebarShortcutActive) {
                     const inSidebarArea = inRightPanel(panels.sidebar, x, y) || inRightPanel(panels.sessionWrapper, x, y) || inRightPanel(panels.utilities, x, y);
                     if (!inSidebarArea)
                         screenState.sidebar = false;
+                } else if (showSidebarHover) {
+                    // If hovering over sidebar area while in shortcut mode, transition to hover control
+                    sidebarShortcutActive = false;
                 }
             }
 
@@ -251,6 +255,7 @@ CustomMouseArea {
                 root.dashboardShortcutActive = false;
                 root.osdShortcutActive = false;
                 root.utilitiesShortcutActive = false;
+                root.sidebarShortcutActive = false;
 
                 // Also hide dashboard and OSD if they're not being hovered
                 const inDashboardArea = root.inBottomPanel(root.panels.dashboard, root.mouseX, root.mouseY);
@@ -302,6 +307,18 @@ CustomMouseArea {
             } else {
                 // Utilities hidden, clear shortcut flag
                 root.utilitiesShortcutActive = false;
+            }
+        }
+
+        function onSidebarChanged() {
+            if (root.screenState.sidebar) {
+                // Sidebar became visible, immediately check if this should be shortcut mode
+                const inSidebarArea = root.inRightPanel(root.panels.sidebar, root.mouseX, root.mouseY) || root.inRightPanel(root.panels.sessionWrapper, root.mouseX, root.mouseY) || root.inRightPanel(root.panels.utilities, root.mouseX, root.mouseY);
+                if (!inSidebarArea)
+                    root.sidebarShortcutActive = true;
+            } else {
+                // Sidebar hidden, clear shortcut flag
+                root.sidebarShortcutActive = false;
             }
         }
 

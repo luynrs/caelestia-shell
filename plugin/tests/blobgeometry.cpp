@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-class c_inverted_rect_probe : public caelestia::blobs::BlobInvertedRect {
+class c_inverted_rect_probe : public caelestia::shell::blobs::BlobInvertedRect {
 public:
     using BlobInvertedRect::updatePaintNode;
     using BlobInvertedRect::updatePolish;
@@ -16,7 +16,7 @@ public:
 
 int main(int argc, char** argv) {
     const QGuiApplication application(argc, argv);
-    caelestia::blobs::BlobGroup group;
+    caelestia::shell::blobs::BlobGroup group;
     group.setSmoothing(4);
     c_inverted_rect_probe shape;
     shape.setGroup(&group);

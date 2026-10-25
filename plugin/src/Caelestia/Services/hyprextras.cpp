@@ -14,7 +14,7 @@ Q_LOGGING_CATEGORY(lcHypr, "caelestia.services.hypr", QtInfoMsg)
 
 } // namespace
 
-namespace caelestia::services::hypr {
+namespace caelestia::shell::services::hypr {
 
 using Qt::StringLiterals::operator""_s;
 
@@ -98,7 +98,7 @@ void HyprExtras::applyOptions(const QVariantHash& options) {
         if (!m_usingLua) {
             request += u"keyword "_s + it.key() + u' ' + it.value().toString() + u';';
         } else {
-            auto parts = it.key().split(u':');
+            const auto parts = it.key().split(u':');
             request += u"eval hl.config({ "_s + parts.join(u" = { "_s) + u" = "_s + it.value().toString() +
                        u" }"_s.repeated(parts.size() - 1) + u" });"_s;
         }
@@ -240,4 +240,4 @@ HyprExtras::SocketPtr HyprExtras::makeRequest(
     return socket;
 }
 
-} // namespace caelestia::services::hypr
+} // namespace caelestia::shell::services::hypr

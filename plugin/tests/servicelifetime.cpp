@@ -46,11 +46,11 @@ protected:
     }
 };
 
-class c_audio_processor : public caelestia::services::AudioProcessor {
+class c_audio_processor : public caelestia::shell::services::AudioProcessor {
     void process() override {}
 };
 
-class c_service : public caelestia::services::Service {
+class c_service : public caelestia::shell::services::Service {
     void start() override {}
     void stop() override {}
 };
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
     }
 
     if (argc > 1 && QString::fromLocal8Bit(argv[1]) == QStringLiteral("toast")) {
-        caelestia::Toast toast(QStringLiteral("Title"), QStringLiteral("Message"), {}, caelestia::Toast::Type::Info, 0);
+        caelestia::shell::Toast toast(QStringLiteral("Title"), QStringLiteral("Message"), {}, caelestia::shell::Toast::Type::Info, 0);
         QCoreApplication::processEvents();
         if (toast.closed() || toast.timeout() != 5000) {
             fprintf(stderr, "A defaulted toast timeout must keep the toast open for its resolved duration\n");
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
         return EXIT_SUCCESS;
     }
 
-    caelestia::services::Lyrics lyrics;
+    caelestia::shell::services::Lyrics lyrics;
     delete lyrics.m_nam;
     auto* network = new c_offline_manager(&lyrics);
     lyrics.m_nam = network;

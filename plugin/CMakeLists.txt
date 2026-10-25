@@ -1,4 +1,4 @@
-find_package(Qt6 REQUIRED COMPONENTS ShaderTools Core Qml Gui Quick QuickControls2 Concurrent Sql Network DBus)
+find_package(Qt6 REQUIRED COMPONENTS ShaderTools Core Qml Gui Quick QuickControls2 Concurrent Sql Network DBus Multimedia)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Qalculate IMPORTED_TARGET libqalculate REQUIRED)
 pkg_check_modules(Pipewire IMPORTED_TARGET libpipewire-0.3 REQUIRED)
@@ -19,6 +19,7 @@ include(cmake/qml-module.cmake)
 add_library(caelestia-util INTERFACE)
 target_include_directories(caelestia-util INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+add_subdirectory(3rdparty/rgbcx)
 add_subdirectory(src/Caelestia)
 
 if(BUILD_TESTING)
@@ -30,7 +31,7 @@ if(BUILD_TESTING)
         src/Caelestia/Services/service.cpp
     )
     target_include_directories(caelestia-audiocollector-test PRIVATE src/Caelestia/Services)
-    target_link_libraries(caelestia-audiocollector-test PRIVATE caelestia-pch Qt::Core Qt::Qml PkgConfig::Pipewire Threads::Threads)
+    target_link_libraries(caelestia-audiocollector-test PRIVATE caelestia-pch caelestia-util Qt::Core Qt::Qml PkgConfig::Pipewire Threads::Threads)
     add_test(NAME audiocollector-chunks COMMAND caelestia-audiocollector-test)
     add_test(NAME audiocollector-concurrency COMMAND caelestia-audiocollector-test concurrency)
     add_executable(caelestia-blobgeometry-test tests/blobgeometry.cpp)

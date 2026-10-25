@@ -28,6 +28,7 @@
   cmake,
   ninja,
   pkg-config,
+  spirv-tools,
   caelestia-cli,
   m3shapes,
   debug ? false,
@@ -36,7 +37,7 @@
 }: let
   version = "1.0.0";
 
-  qs = (quickshell.withModules [qt6.qtimageformats m3shapes]).overrideAttrs (_: {
+  qs = (quickshell.withModules [qt6.qtimageformats qt6.qtmultimedia m3shapes]).overrideAttrs (_: {
     installPhase = ''
       mkdir -p $out
       cp -r ${quickshell.unwrapped.overrideAttrs (old: {
@@ -103,8 +104,8 @@
       fileset = lib.fileset.union ./../CMakeLists.txt ./../plugin;
     };
 
-    nativeBuildInputs = [cmake ninja pkg-config];
-    buildInputs = [qt6.qtbase qt6.qtdeclarative qt6.qtshadertools libqalculate pipewire aubio libcava fftw lm_sensors];
+    nativeBuildInputs = [cmake ninja pkg-config spirv-tools];
+    buildInputs = [qt6.qtbase qt6.qtdeclarative qt6.qtmultimedia qt6.qtshadertools libqalculate pipewire aubio libcava fftw lm_sensors];
 
     dontWrapQtApps = true;
     cmakeFlags =
@@ -142,11 +143,11 @@ in
 
     postInstall = ''
       makeWrapper ${qs}/bin/qs $out/bin/caelestia-shell \
-      	--prefix PATH : "${lib.makeBinPath runtimeDeps}" \
-      	--set FONTCONFIG_FILE "${fontconfig}" \
-      	--set CAELESTIA_LIB_DIR ${extras}/lib \
+        --prefix PATH : "${lib.makeBinPath runtimeDeps}" \
+        --set FONTCONFIG_FILE "${fontconfig}" \
+        --set CAELESTIA_LIB_DIR ${extras}/lib \
         --set CAELESTIA_XKB_RULES_PATH ${xkeyboard-config}/share/xkeyboard-config-2/rules/base.lst \
-      	--add-flags "-p $out/share/caelestia-shell"
+        --add-flags "-p $out/share/caelestia-shell"
 
       mkdir -p $out/lib
       ln -s ${extras}/lib/* $out/lib/

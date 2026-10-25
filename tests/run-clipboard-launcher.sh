@@ -43,12 +43,6 @@ Singleton {
 }
 QML
 fi
-case ${WAYLAND_DISPLAY:-} in
-    /*) ;;
-    *) export WAYLAND_DISPLAY="${XDG_RUNTIME_DIR:?}/${WAYLAND_DISPLAY:?}" ;;
-esac
-export XDG_RUNTIME_DIR="$test_dir/runtime"
-mkdir -m 700 "$XDG_RUNTIME_DIR"
 cat > "$test_dir/bin/cliphist" <<'SH'
 #!/bin/sh
 case "$*" in

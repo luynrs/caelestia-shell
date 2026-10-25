@@ -12,8 +12,6 @@ chmod +x "$test_dir/bin/cliphist"
 ln -s cliphist "$test_dir/bin/wl-copy"
 ln -s cliphist "$test_dir/bin/clipboard-cache-check"
 export CAELESTIA_CLIPBOARD_TEST_DIRECTORY="$test_dir"
-export XDG_RUNTIME_DIR="$test_dir/runtime"
-mkdir -m 700 "$XDG_RUNTIME_DIR"
 mkdir "$XDG_RUNTIME_DIR/caelestia-clipboard"
 for filename in 9007199254740993.png 100.jpeg 9007199254740993.jpeg 42.png 43.jpeg 44.gif 45.bmp 46.tiff unrelated.txt notes.png 42.PNG 43.png.backup .123.png.tmp; do
     touch "$XDG_RUNTIME_DIR/caelestia-clipboard/$filename"
