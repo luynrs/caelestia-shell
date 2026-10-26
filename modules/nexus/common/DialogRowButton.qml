@@ -7,7 +7,6 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.components.controls
-import qs.components.effects
 import qs.services
 
 Item {
@@ -75,7 +74,6 @@ Item {
 
             PropertyChanges {
                 backdrop.enabled: true
-                elevation.opacity: 1
                 openButton.opacity: 0
                 dialogContent.opacity: 1
                 dialogBg.radius: root.Tokens.rounding.extraLargeIncreased
@@ -109,21 +107,6 @@ Item {
             Anim {
                 properties: "width,height"
             }
-        }
-
-        Elevation {
-            id: elevation
-
-            transform: Matrix4x4 {
-                matrix: dialogBg.deformMatrix
-            }
-
-            anchors.fill: parent
-            radius: dialogBg.radius
-            bottomLeftRadius: dialogBg.bottomLeftRadius
-            bottomRightRadius: dialogBg.bottomRightRadius
-            level: 4
-            opacity: 0
         }
 
         BlobRect {

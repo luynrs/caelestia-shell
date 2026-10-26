@@ -421,9 +421,12 @@ Singleton {
     }
 
     function updateStatus(newStatus: var): void {
-        const oldState = status.state;
         if (newStatus.state === "needs-auth" && !newStatus.authUrl && status.authUrl) {
             newStatus.authUrl = status.authUrl;
+        }
+
+        if (status.state !== newStatus.state) {
+            emitStatusToast(newStatus);
         }
 
         status = newStatus;
@@ -437,10 +440,6 @@ Singleton {
         // with a dedicated server command fill this via refreshStats() instead.
         if (newStatus.connected && newStatus.server)
             root.serverLocation = newStatus.server;
-
-        if (oldState !== newStatus.state) {
-            emitStatusToast(newStatus);
-        }
 
         // Auto connect if config was enabled on init
         if (root.autoConnectPending) {

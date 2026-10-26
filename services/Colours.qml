@@ -29,8 +29,6 @@ Singleton {
     property real lastBaseTransparency
 
     function getLuminance(c: color): real {
-        if (c.r == 0 && c.g == 0 && c.b == 0)
-            return 0;
         return Math.sqrt(0.299 * (c.r ** 2) + 0.587 * (c.g ** 2) + 0.114 * (c.b ** 2));
     }
 
@@ -38,6 +36,10 @@ Singleton {
         const luminance = getLuminance(c);
 
         const offset = (!light || layer == 1 ? 1 : -layer / 2) * (light ? 0.2 : 0.3) * (1 - transparency.base) * (1 + wallLuminance * (light ? (layer == 1 ? 3 : 1) : 2.5));
+        if (luminance === 0) {
+            const channel = Math.max(0, Math.min(1, offset));
+            return Qt.rgba(channel, channel, channel, a);
+        }
         const scale = (luminance + offset) / luminance;
         const r = Math.max(0, Math.min(1, c.r * scale));
         const g = Math.max(0, Math.min(1, c.g * scale));

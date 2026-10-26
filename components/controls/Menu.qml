@@ -6,7 +6,6 @@ import Quickshell
 import Caelestia
 import Caelestia.Config
 import qs.components
-import qs.components.effects
 import qs.services
 import qs.modules.drawers
 
@@ -61,8 +60,10 @@ MouseArea {
         b: root.attachTo
     }
 
-    Elevation {
+    Rectangle {
         id: menu
+
+        color: "transparent"
 
         layer.enabled: root.opacity > 0 && root.opacity < 1
 
@@ -84,7 +85,6 @@ MouseArea {
         }
 
         radius: Tokens.rounding.large
-        level: 2
 
         implicitWidth: Math.max(200, column.implicitWidth + column.anchors.margins * 2)
         implicitHeight: column.implicitHeight + column.anchors.margins * 2

@@ -16,8 +16,6 @@ Item {
     required property var panels
     required property real maxHeight
     required property SearchBar search
-    required property int padding
-    required property int rounding
 
     readonly property bool showWallpapers: search.text.startsWith(`${GlobalConfig.launcher.actionPrefix}wallpaper `)
     readonly property bool showClipboard: search.text === `${GlobalConfig.launcher.actionPrefix}clipboard` || search.text.startsWith(`${GlobalConfig.launcher.actionPrefix}clipboard `)

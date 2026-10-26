@@ -242,7 +242,7 @@ void FileSystemModel::watchDirIfRecursive(const QString& path) {
             return dirs;
         });
         future.then(this, [currentDir, showHidden, this](const QStringList& paths) {
-            if (currentDir == m_dir && showHidden == m_showHidden && !paths.isEmpty()) {
+            if (m_recursive && m_watchChanges && currentDir == m_dir && showHidden == m_showHidden && !paths.isEmpty()) {
                 // Ignore if dir or showHidden has changed
                 m_watcher.addPaths(paths);
             }

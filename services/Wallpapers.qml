@@ -20,7 +20,6 @@ Searcher {
     property string previewPath
     property string actualCurrent
     property bool previewColourLock
-    property bool pendingPreviewClear
 
     function getCategoryFor(w: FileSystemEntry): string {
         let category = w.parentDir.slice(Paths.wallsdir.length + 1);
@@ -48,14 +47,12 @@ Searcher {
 
     function stopPreview(): void {
         showPreview = false;
-        if (previewColourLock)
-            pendingPreviewClear = true;
-        else
+        if (!previewColourLock)
             Colours.showPreview = false;
     }
 
     onPreviewColourLockChanged: {
-        if (!previewColourLock && pendingPreviewClear)
+        if (!previewColourLock && !showPreview)
             Colours.showPreview = false;
     }
 

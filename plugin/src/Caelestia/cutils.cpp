@@ -8,6 +8,7 @@
 #include <qquickitemgrabresult.h>
 #include <qquickwindow.h>
 #include <qregularexpression.h>
+#include <qsavefile.h>
 #include <qtconcurrentrun.h>
 
 #include "util/metaenum.hpp"
@@ -87,12 +88,28 @@ bool CUtils::copyFile(const QUrl& source, const QUrl& target, bool overwrite) {
         return false;
     }
 
-    if (overwrite && QFile::exists(target.toLocalFile()) && !QFile::remove(target.toLocalFile())) {
-        qCWarning(lcCUtils) << "copyFile: overwrite was specified but failed to remove" << target.toLocalFile();
+    if (!overwrite)
+        return QFile::copy(source.toLocalFile(), target.toLocalFile());
+
+    QFile source_file(source.toLocalFile());
+    if (!source_file.open(QIODevice::ReadOnly)) {
         return false;
     }
 
-    return QFile::copy(source.toLocalFile(), target.toLocalFile());
+    QSaveFile target_file(target.toLocalFile());
+    if (!target_file.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+
+    char buffer[64 * 1024];
+    qint64 bytes_read = 0;
+    while ((bytes_read = source_file.read(buffer, sizeof(buffer))) > 0) {
+        if (target_file.write(buffer, bytes_read) != bytes_read) {
+            return false;
+        }
+    }
+
+    return bytes_read == 0 && target_file.commit();
 }
 
 bool CUtils::deleteFile(const QUrl& path) {

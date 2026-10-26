@@ -188,13 +188,6 @@ Item {
             icon: "clear_all"
             font: Tokens.font.icon.large
             onClicked: clearTimer.start()
-
-            Elevation {
-                anchors.fill: parent
-                radius: parent.radius
-                z: -1
-                level: clearBtn.stateLayer.containsMouse ? 4 : 3
-            }
         }
 
         Behavior on scale {

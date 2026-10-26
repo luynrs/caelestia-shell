@@ -4,7 +4,6 @@ import Caelestia
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
-import qs.components.effects
 import qs.services
 
 StyledRect {
@@ -37,14 +36,6 @@ StyledRect {
         if (root.modelData.type === Toast.Error)
             colour = Colours.palette.m3error;
         return Qt.alpha(colour, 0.3);
-    }
-
-    Elevation {
-        anchors.fill: parent
-        radius: parent.radius
-        opacity: parent.opacity
-        z: -1
-        level: 3
     }
 
     RowLayout {

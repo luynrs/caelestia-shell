@@ -4,7 +4,6 @@ import Caelestia.Models
 import Caelestia.Multimedia
 import Caelestia.State
 import qs.components
-import qs.components.effects
 import qs.services
 
 Item {
@@ -32,19 +31,6 @@ Item {
         onClicked: {
             Wallpapers.setWallpaper(root.modelData.path);
             root.screenState.launcher = false;
-        }
-    }
-
-    Elevation {
-        anchors.fill: image
-        radius: image.radius
-        opacity: root.PathView.isCurrentItem ? 1 : 0
-        level: 4
-
-        Behavior on opacity {
-            Anim {
-                type: Anim.DefaultEffects
-            }
         }
     }
 

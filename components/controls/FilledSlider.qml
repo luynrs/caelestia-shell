@@ -1,4 +1,3 @@
-import "../effects"
 import QtQuick
 import QtQuick.Templates
 import Caelestia.Config
@@ -38,12 +37,6 @@ Slider {
         y: root.visualPosition * (root.availableHeight - height)
         implicitWidth: root.width
         implicitHeight: root.width
-
-        Elevation {
-            anchors.fill: parent
-            radius: rect.radius
-            level: handleInteraction.containsMouse ? 2 : 1
-        }
 
         StyledRect {
             id: rect

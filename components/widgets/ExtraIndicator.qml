@@ -1,4 +1,3 @@
-import "../effects"
 import QtQuick
 import Caelestia.Config
 import qs.components
@@ -18,14 +17,6 @@ StyledRect {
 
     opacity: extra > 0 ? 1 : 0
     scale: extra > 0 ? 1 : 0.5
-
-    Elevation {
-        anchors.fill: parent
-        radius: parent.radius
-        opacity: parent.opacity
-        z: -1
-        level: 2
-    }
 
     StyledText {
         id: count

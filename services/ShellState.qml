@@ -10,22 +10,15 @@ Singleton {
     property ShellRoot shellRoot
 
     function anySidebarOpen(): bool {
-        return states.instances.some(s => s.sidebar);
+        return components.instances.some(component => component.rootWindow?.screenState.sidebar ?? false);
     }
 
     function forScreen(screen: ShellScreen): ScreenState {
-        for (const s of states.instances)
-            if (s.modelData === screen)
-                return s;
-        return null;
+        return componentsFor(screen)?.rootWindow?.screenState ?? null;
     }
 
     function forActive(): ScreenState {
-        const mon = Hypr.focusedMonitor;
-        for (const s of states.instances)
-            if (Hypr.monitorFor(s.modelData) === mon)
-                return s;
-        return null;
+        return componentsForActive()?.rootWindow?.screenState ?? null;
     }
 
     function componentsFor(screen: ShellScreen): Components {
@@ -41,14 +34,6 @@ Singleton {
             if (Hypr.monitorFor(c.modelData) === mon)
                 return c;
         return null;
-    }
-
-    Variants {
-        id: states
-
-        model: Screens.screens
-
-        ScreenState {}
     }
 
     Variants {

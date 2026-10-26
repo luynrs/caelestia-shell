@@ -8,7 +8,6 @@ import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.components.controls
-import qs.components.effects
 import qs.services
 
 Loader {
@@ -151,13 +150,6 @@ Loader {
 
             MouseArea {
                 anchors.fill: parent
-            }
-
-            Elevation {
-                anchors.fill: parent
-                radius: parent.radius
-                z: -1
-                level: 3
             }
 
             ColumnLayout {

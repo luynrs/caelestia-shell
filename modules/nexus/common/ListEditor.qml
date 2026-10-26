@@ -6,7 +6,6 @@ import Quickshell
 import Caelestia.Config
 import qs.components
 import qs.components.controls
-import qs.components.effects
 import qs.services
 
 ListView {
@@ -119,7 +118,6 @@ ListView {
             PropertyChanges {
                 item.radiusLerpProg: 1
                 placeholder.opacity: 0.1
-                elevation.opacity: 1
                 itemBg.color: Colours.palette.m3primaryContainer
                 dragIcon.color: Colours.palette.m3onPrimaryContainer
                 label.color: Colours.palette.m3onPrimaryContainer
@@ -230,17 +228,6 @@ ListView {
 
             implicitWidth: item.width
             implicitHeight: item.implicitHeight
-
-            Elevation {
-                id: elevation
-
-                anchors.fill: parent
-                radius: itemBg.radius
-                topLeftRadius: itemBg.topLeftRadius
-                topRightRadius: itemBg.topRightRadius
-                level: 3
-                opacity: 0
-            }
 
             StyledRect {
                 id: itemBg
