@@ -16,15 +16,23 @@ Searcher {
         return search.slice(GlobalConfig.launcher.actionPrefix.length);
     }
 
-    list: [...variants.instances, clipboardAction]
+    list: {
+        const items = [...variants.instances];
+        const calcIndex = items.findIndex(action => action.command && action.command[1] === "calc");
+        if (calcIndex !== -1)
+            items.splice(calcIndex + 1, 0, clipboardAction);
+        else
+            items.unshift(clipboardAction);
+        return items;
+    }
     useFuzzy: GlobalConfig.launcher.useFuzzy.actions
 
     Action {
         id: clipboardAction
 
         modelData: ({
-                name: Tr.tr("Clipboard history"),
-                description: Tr.tr("Search copied text and images"),
+                name: Tr.tr("Clipboard"),
+                description: Tr.tr("Copied text and images"),
                 icon: "content_paste",
                 command: ["autocomplete", "clipboard"]
             })
