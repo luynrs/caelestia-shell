@@ -31,6 +31,13 @@ Item {
     property real offsetScale: shouldBeActive ? 0 : 1
     property real sidebarLerp
 
+    onShouldBeActiveChanged: {
+        if (shouldBeActive)
+            implicitHeight = Qt.binding(() => content.implicitHeight + totalPadding);
+        else
+            implicitHeight = implicitHeight;
+    }
+
     visible: offsetScale < 1
     anchors.topMargin: attachedToSidebar ? (-implicitHeight - 5) * offsetScale : 0
     anchors.bottomMargin: attachedToSidebar ? 0 : (-implicitHeight - 5) * offsetScale

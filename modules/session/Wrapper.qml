@@ -15,6 +15,13 @@ Item {
     property real offsetScale: shouldBeActive ? 0 : 1
     property real sidebarOffset: sidebarVisible ? 14 : 0
 
+    onShouldBeActiveChanged: {
+        if (shouldBeActive)
+            implicitWidth = Qt.binding(() => content.implicitWidth);
+        else
+            implicitWidth = implicitWidth;
+    }
+
     visible: offsetScale < 1
     anchors.rightMargin: (-implicitWidth - 5 - sidebarOffset) * offsetScale
     implicitWidth: content.implicitWidth

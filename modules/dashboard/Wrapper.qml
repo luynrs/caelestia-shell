@@ -31,6 +31,13 @@ Item {
     readonly property bool shouldBeActive: screenState.dashboard && Config.dashboard.enabled
     property real offsetScale: 1
 
+    onShouldBeActiveChanged: {
+        if (shouldBeActive)
+            implicitHeight = Qt.binding(() => content.implicitHeight);
+        else
+            implicitHeight = implicitHeight;
+    }
+
     visible: offsetScale < 1
     anchors.bottomMargin: (-implicitHeight - 5) * offsetScale
     implicitHeight: content.implicitHeight

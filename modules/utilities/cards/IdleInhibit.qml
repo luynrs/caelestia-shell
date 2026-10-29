@@ -10,20 +10,17 @@ import qs.services
 StyledRect {
     id: root
 
-    readonly property real nonAnimHeight: layout.implicitHeight + (RuntimeState.inhibitIdle ? activeChip.implicitHeight + activeChip.anchors.topMargin : 0) + Tokens.padding.extraLargeIncreased
+    readonly property real nonAnimHeight: layout.implicitHeight + layout.anchors.margins * 2
 
     implicitHeight: nonAnimHeight
 
     radius: Tokens.rounding.large
     color: Colours.tPalette.m3surfaceContainer
-    clip: true
 
     RowLayout {
         id: layout
 
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.fill: parent
         anchors.margins: Tokens.padding.large
         spacing: Tokens.spacing.medium
 
@@ -68,57 +65,5 @@ StyledRect {
             checked: RuntimeState.inhibitIdle
             onToggled: RuntimeState.inhibitIdle = checked
         }
-    }
-
-    Loader {
-        id: activeChip
-
-        asynchronous: true
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.topMargin: Tokens.spacing.large
-        anchors.bottomMargin: RuntimeState.inhibitIdle ? Tokens.padding.large : -implicitHeight
-        anchors.leftMargin: Tokens.padding.large
-
-        opacity: RuntimeState.inhibitIdle ? 1 : 0
-        scale: RuntimeState.inhibitIdle ? 1 : 0.5
-
-        Component.onCompleted: active = Qt.binding(() => opacity > 0)
-
-        sourceComponent: StyledRect {
-            implicitWidth: activeText.implicitWidth + Tokens.padding.medium * 2
-            implicitHeight: activeText.implicitHeight + Tokens.padding.small
-
-            radius: Tokens.rounding.full
-            color: Colours.palette.m3primary
-
-            StyledText {
-                id: activeText
-
-                anchors.centerIn: parent
-                // TRANSLATORS: %1 = a clock time, e.g. 14:30
-                text: Tr.tr("Active since %1").arg(Tr.formatDateTime(new Date(RuntimeState.inhibitingIdleSince), Units.twelveHourClock ? "hh:mm a" : "hh:mm"))
-                color: Colours.palette.m3onPrimary
-                font: Tokens.font.body.builders.small.size(Math.round(Tokens.font.body.small.pointSize * 0.9)).build()
-            }
-        }
-
-        Behavior on anchors.bottomMargin {
-            Anim {}
-        }
-
-        Behavior on opacity {
-            Anim {
-                type: Anim.StandardSmall
-            }
-        }
-
-        Behavior on scale {
-            Anim {}
-        }
-    }
-
-    Behavior on implicitHeight {
-        Anim {}
     }
 }
