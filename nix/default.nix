@@ -39,6 +39,7 @@
 
   cli = caelestia-cli.overrideAttrs (old: {
     patchPhase = old.patchPhase + ''
+      patch -p1 < ${./patches/cli-hyprtoolkit.patch}
       substituteInPlace src/caelestia/subcommands/record.py \
         --replace-fail 'str(max_rr)' 'str(min(60, max_rr))' \
         --replace-fail 'str(round(focused_monitor["refreshRate"]))' 'str(min(60, round(focused_monitor["refreshRate"])))'
